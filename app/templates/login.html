@@ -7,64 +7,37 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <style>
     html,body{height:100%}
-    body{margin:0;min-height:100vh;background:var(--ink-950);overflow:hidden}
+    body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+      background:var(--ink-950);overflow:hidden;padding:24px;box-sizing:border-box}
 
-    /* Vídeo de fondo a pantalla completa + capas para legibilidad */
-    .bg-video{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-3}
-    .bg-tint{position:fixed;inset:0;z-index:-2;pointer-events:none;
-      background:linear-gradient(90deg,rgba(8,12,17,.94) 0%,rgba(8,12,17,.80) 38%,rgba(8,12,17,.30) 72%,rgba(8,12,17,.12) 100%)}
-    .bg-tint2{position:fixed;inset:0;z-index:-1;pointer-events:none;
-      background:linear-gradient(180deg,rgba(8,12,17,.55) 0%,rgba(8,12,17,0) 30%,rgba(8,12,17,.55) 100%)}
+    /* Vídeo de fondo a pantalla completa (espejado para llevar el gráfico a la izquierda) */
+    .bg-video{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;
+      transform:scaleX(-1);z-index:-2}
+    .bg-overlay{position:fixed;inset:0;z-index:-1;pointer-events:none;
+      background:radial-gradient(1100px 760px at 50% 44%,rgba(11,16,22,.55),rgba(11,16,22,.82))}
 
     /* Isotipo pequeño arriba a la izquierda */
-    .brandmark{position:fixed;top:24px;left:34px;z-index:4}
+    .brandmark{position:fixed;top:22px;left:28px;z-index:3}
     .brandmark img{height:44px;display:block}
 
-    /* Escenario en dos columnas */
-    .stage{position:fixed;inset:0;z-index:1;display:grid;grid-template-columns:1.05fr .95fr;
-      align-items:center;gap:40px;padding:0 6vw;box-sizing:border-box}
-
-    /* Columna izquierda: presentación */
-    .intro{color:#fff;max-width:540px;justify-self:start}
-    .intro .kicker{font-family:var(--font-mono);font-size:11px;letter-spacing:.26em;text-transform:uppercase;
-      color:var(--cyan-400);margin-bottom:18px}
-    .intro h1{font-family:var(--font-display);font-size:clamp(30px,3.4vw,46px);line-height:1.08;
-      font-weight:800;letter-spacing:-.02em;color:#fff;margin:0 0 18px}
-    .intro h1 .hl{color:var(--cyan-400)}
-    .intro .lead{font-size:16px;line-height:1.6;color:#c4ccd6;margin:0 0 26px;max-width:480px}
-    .intro ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:13px}
-    .intro li{display:flex;align-items:center;gap:12px;font-size:14.5px;color:#e7ecf1}
-    .intro li svg{flex:0 0 22px;width:22px;height:22px}
-    .intro li .ic{width:24px;height:24px;border-radius:7px;background:rgba(28,188,228,.16);
-      display:flex;align-items:center;justify-content:center;flex:0 0 24px}
-    .intro li .ic svg{width:14px;height:14px;stroke:var(--cyan-400)}
-    .intro .sign{margin-top:30px;font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;
-      text-transform:uppercase;color:#6b7684}
-    .intro .sign b{color:var(--orange-400);font-weight:700}
-
-    /* Columna derecha: tarjeta de acceso */
-    .login{width:390px;max-width:100%;justify-self:center;background:var(--white);
-      border-radius:22px;padding:38px 36px 28px;box-shadow:0 30px 90px rgba(0,0,0,.55)}
+    /* Tarjeta de acceso centrada */
+    .login{position:relative;z-index:2;width:400px;max-width:92vw;background:var(--white);
+      border-radius:22px;padding:40px 38px 30px;box-shadow:0 30px 90px rgba(0,0,0,.55)}
     .login .wmk{text-align:center;margin-bottom:4px}
-    .login .wmk img{height:36px}
+    .login .wmk img{height:38px}
     .login .eyebrow{text-align:center;font-family:var(--font-mono);font-size:10px;letter-spacing:.24em;
-      text-transform:uppercase;color:var(--ink-400);margin-bottom:20px}
-    .login h2{text-align:center;font-size:22px;margin-bottom:4px}
-    .login .sub{text-align:center;color:var(--ink-400);font-size:13px;margin-bottom:20px}
+      text-transform:uppercase;color:var(--ink-400);margin-bottom:22px}
+    .login h2{text-align:center;font-size:23px;margin-bottom:4px}
+    .login .sub{text-align:center;color:var(--ink-400);font-size:13px;margin-bottom:22px}
     .login label{display:block;font-size:12px;font-weight:700;color:var(--ink-700);margin:14px 0 6px}
     .login input{width:100%;border:1.5px solid var(--ink-200);border-radius:12px;padding:12px 14px;
       font-size:14px;font-family:var(--font-sans);color:var(--ink-900);box-sizing:border-box}
     .login input:focus{outline:none;border-color:var(--cyan-500);box-shadow:0 0 0 3px rgba(28,188,228,.16)}
-    .login .btn{width:100%;justify-content:center;margin-top:22px;padding:13px;font-size:15px}
-    .login .foot{text-align:center;margin-top:20px;font-family:var(--font-mono);font-size:10px;
+    .login .btn{width:100%;justify-content:center;margin-top:24px;padding:13px;font-size:15px}
+    .login .foot{text-align:center;margin-top:22px;font-family:var(--font-mono);font-size:10px;
       letter-spacing:.14em;text-transform:uppercase;color:var(--ink-300)}
 
-    /* Responsive: en pantallas medianas/pequeñas, solo la tarjeta centrada */
-    @media(max-width:980px){
-      .stage{grid-template-columns:1fr;justify-items:center;padding:0 24px}
-      .intro{display:none}
-      .login{justify-self:center}
-    }
+    @media(max-width:520px){ .brandmark img{height:38px} }
   </style>
 </head>
 <body>
@@ -72,47 +45,30 @@
          poster="https://cupperlab.com/assets/img/diagnosticos-hero-graph.webp">
     <source src="https://cupperlab.com/assets/video/diagnosticos-hero-graph.mp4" type="video/mp4">
   </video>
-  <div class="bg-tint"></div>
-  <div class="bg-tint2"></div>
-
+  <div class="bg-overlay"></div>
   <a class="brandmark" href="https://cupperlab.com" target="_blank" rel="noopener">
     <img src="{{ url_for('static', filename='brand/cupperlab-isotipo.png') }}" alt="Cupperlab">
   </a>
 
-  <div class="stage">
-    <div class="intro">
-      <div class="kicker">Cupperlab · Informes SEO</div>
-      <h1>Tus informes SEO con <span class="hl">datos reales</span> de Google.</h1>
-      <p class="lead">Analytics 4 y Search Console en vivo, posiciones mes a mes, auditoría del sitio
-         y el PDF listo para el cliente. Todo en un solo panel.</p>
-      <ul>
-        <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Tráfico y keywords reales (GA4 + Search Console)</li>
-        <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Posiciones y oportunidades mes a mes</li>
-        <li><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Auditoría del sitio e informe en PDF</li>
-      </ul>
-      <div class="sign"><b>Mejoramos tu rentabilidad.</b></div>
+  <form class="login" method="post">
+    <div class="wmk"><img src="{{ url_for('static', filename='brand/cupperlab-wordmark.png') }}" alt="Cupperlab"></div>
+    <div class="eyebrow">Informes SEO</div>
+    <h2>Bienvenido</h2>
+    <div class="sub">Introduce tu usuario y contraseña para entrar.</div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}<div class="flash {{ cat }}" style="margin-bottom:12px">{{ msg }}</div>{% endfor %}
+    {% endwith %}
+    <label>Usuario</label>
+    <input type="text" name="username" autofocus required autocomplete="username" placeholder="tu usuario">
+    <label>Contraseña</label>
+    <input type="password" name="password" required autocomplete="current-password" placeholder="••••••••">
+    <button class="btn cyan" type="submit">Entrar</button>
+    <div class="foot">Mejoramos tu rentabilidad</div>
+    <div style="text-align:center;margin-top:10px;font-size:11px">
+      <a href="{{ url_for('main.privacy') }}" style="color:var(--ink-300)">Privacidad</a>
+      <span style="color:var(--ink-200)">·</span>
+      <a href="{{ url_for('main.terms') }}" style="color:var(--ink-300)">Términos</a>
     </div>
-
-    <form class="login" method="post">
-      <div class="wmk"><img src="{{ url_for('static', filename='brand/cupperlab-wordmark.png') }}" alt="Cupperlab"></div>
-      <div class="eyebrow">Informes SEO</div>
-      <h2>Bienvenido</h2>
-      <div class="sub">Introduce tu usuario y contraseña para entrar.</div>
-      {% with messages = get_flashed_messages(with_categories=true) %}
-        {% for cat, msg in messages %}<div class="flash {{ cat }}" style="margin-bottom:12px">{{ msg }}</div>{% endfor %}
-      {% endwith %}
-      <label>Usuario</label>
-      <input type="text" name="username" autofocus required autocomplete="username" placeholder="tu usuario">
-      <label>Contraseña</label>
-      <input type="password" name="password" required autocomplete="current-password" placeholder="••••••••">
-      <button class="btn cyan" type="submit">Entrar</button>
-      <div class="foot">Mejoramos tu rentabilidad</div>
-      <div style="text-align:center;margin-top:10px;font-size:11px">
-        <a href="{{ url_for('main.privacy') }}" style="color:var(--ink-300)">Privacidad</a>
-        <span style="color:var(--ink-200)">·</span>
-        <a href="{{ url_for('main.terms') }}" style="color:var(--ink-300)">Términos</a>
-      </div>
-    </form>
-  </div>
+  </form>
 </body>
 </html>
