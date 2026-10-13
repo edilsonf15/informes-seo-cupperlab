@@ -7,23 +7,32 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <style>
     html,body{height:100%}
-    body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
-      background:var(--ink-950);overflow:hidden;padding:24px;box-sizing:border-box}
+    body{margin:0;min-height:100vh;overflow:hidden;background:var(--ink-950)}
 
-    /* Vídeo de fondo a pantalla completa + capa oscura */
-    .bg-video{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
-    .bg-overlay{position:fixed;inset:0;z-index:-1;pointer-events:none;
-      background:radial-gradient(1100px 700px at 50% 40%,rgba(11,16,22,.62),rgba(11,16,22,.86))}
+    .panes{position:fixed;inset:0;display:flex;z-index:0}
+    /* Izquierda: fondo oscuro */
+    .pane-left{flex:1 1 56%;position:relative;overflow:hidden;
+      background:radial-gradient(900px 620px at 32% 18%,#16293a 0%,#0c141c 68%)}
+    /* Derecha: vídeo */
+    .pane-right{flex:1 1 44%;position:relative;overflow:hidden}
+    .pane-right video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+    .pane-right .veil{position:absolute;inset:0;
+      background:linear-gradient(90deg,#0c141c 0%,rgba(12,20,28,.35) 40%,rgba(12,20,28,.05) 100%)}
 
-    /* Isotipo (favicon) arriba a la izquierda */
-    .brandmark{position:fixed;top:20px;left:24px;z-index:3}
-    .brandmark img{height:46px;display:block}
+    /* Isotipo grande como marca de agua tonal, llenando el espacio de la izquierda */
+    .wm{position:fixed;left:-9%;top:50%;transform:translateY(-50%);height:96vh;width:auto;z-index:1;
+      pointer-events:none;opacity:.14;filter:grayscale(1) brightness(1.6)}
 
-    /* Tarjeta de acceso centrada */
-    .login{position:relative;z-index:2;width:400px;max-width:92vw;background:var(--white);
-      border-radius:22px;padding:40px 38px 30px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
-    .login .wm{text-align:center;margin-bottom:4px}
-    .login .wm img{height:38px}
+    /* Isotipo pequeño arriba a la izquierda (marca) */
+    .brandmark{position:fixed;top:20px;left:24px;z-index:6}
+    .brandmark img{height:42px;display:block}
+
+    /* Tarjeta de acceso centrada en toda la pantalla */
+    .login{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;
+      width:400px;max-width:92vw;background:var(--white);border-radius:22px;
+      padding:40px 38px 30px;box-shadow:0 30px 90px rgba(0,0,0,.55)}
+    .login .wmk{text-align:center;margin-bottom:4px}
+    .login .wmk img{height:38px}
     .login .eyebrow{text-align:center;font-family:var(--font-mono);font-size:10px;letter-spacing:.24em;
       text-transform:uppercase;color:var(--ink-400);margin-bottom:22px}
     .login h2{text-align:center;font-size:23px;margin-bottom:4px}
@@ -36,21 +45,33 @@
     .login .foot{text-align:center;margin-top:22px;font-family:var(--font-mono);font-size:10px;
       letter-spacing:.14em;text-transform:uppercase;color:var(--ink-300)}
 
-    @media(max-width:520px){ .brandmark img{height:38px} }
+    @media(max-width:860px){
+      .pane-right{display:none}
+      .pane-left{flex:1}
+      .wm{right:-20%;bottom:-18%;width:135%}
+    }
   </style>
 </head>
 <body>
-  <video class="bg-video" autoplay muted loop playsinline preload="auto"
-         poster="https://cupperlab.com/assets/img/diagnosticos-hero-graph.webp">
-    <source src="https://cupperlab.com/assets/video/diagnosticos-hero-graph.mp4" type="video/mp4">
-  </video>
-  <div class="bg-overlay"></div>
+  <div class="panes">
+    <div class="pane-left"></div>
+    <div class="pane-right">
+      <video autoplay muted loop playsinline preload="auto"
+             poster="https://cupperlab.com/assets/img/diagnosticos-hero-graph.webp">
+        <source src="https://cupperlab.com/assets/video/diagnosticos-hero-graph.mp4" type="video/mp4">
+      </video>
+      <div class="veil"></div>
+    </div>
+  </div>
+
+  <img class="wm" src="{{ url_for('static', filename='brand/cupperlab-isotipo.png') }}" alt="">
+
   <a class="brandmark" href="https://cupperlab.com" target="_blank" rel="noopener">
     <img src="{{ url_for('static', filename='brand/cupperlab-isotipo.png') }}" alt="Cupperlab">
   </a>
 
   <form class="login" method="post">
-    <div class="wm"><img src="{{ url_for('static', filename='brand/cupperlab-wordmark.png') }}" alt="Cupperlab"></div>
+    <div class="wmk"><img src="{{ url_for('static', filename='brand/cupperlab-wordmark.png') }}" alt="Cupperlab"></div>
     <div class="eyebrow">Informes SEO</div>
     <h2>Bienvenido</h2>
     <div class="sub">Introduce tu usuario y contraseña para entrar.</div>
