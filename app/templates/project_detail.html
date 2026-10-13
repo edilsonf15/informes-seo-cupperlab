@@ -1,133 +1,144 @@
 {% extends "base.html" %}
-{% block title %}{{ project.name }}{% endblock %}
+{% block page_title %}{{ project.name }}{% endblock %}
+{% block page_active %}panel{% endblock %}
+{% block topbar_title %}{{ project.name }}{% endblock %}
+{% block page_eyebrow %}{{ project.domain }}{% endblock %}
+{% block topbar_actions %}
+  <a class="btn outline sm" href="{{ url_for('main.configure_project', pid=project.id) }}">Editar fuentes</a>
+{% endblock %}
 {% block body %}
-<h1>{{ project.name }}</h1>
-<p class="lead">{{ project.domain }}</p>
 
 {% if not connected %}
-  <div class="card" style="border-color:#f0dcb0;background:#fffaf0">
-    <h3>Conecta las fuentes para ver el panel</h3>
-    <p class="small">Asigna la propiedad de Google Analytics y el sitio de Search Console para que
-       aparezcan aquí las métricas en vivo (sesiones, usuarios, clics, impresiones, posiciones y keywords).</p>
-    <a class="btn cian sm" href="{{ url_for('main.configure_project', pid=project.id) }}">Configurar fuentes</a>
+  <div class="callout">
+    <h3>Conecta las fuentes para ver el panel en vivo</h3>
+    <p class="small">Asigna la propiedad de Google Analytics y el sitio de Search Console para ver aquí las
+       métricas reales (keywords, posiciones, clics, impresiones, sesiones y usuarios).</p>
+    <div style="margin-top:10px"><a class="btn cyan sm" href="{{ url_for('main.configure_project', pid=project.id) }}">Configurar fuentes</a></div>
   </div>
 {% elif dash %}
   <div class="card">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-      <h3 style="margin:0">Panel en vivo</h3>
-      <span class="small muted">últimos</span>
-      {% for m in [3,6,12,24] %}
-        <a class="btn ghost sm {{ 'cian' if m==months }}" href="?months={{ m }}">{{ m }}m</a>
-      {% endfor %}
+    <div class="card-head">
+      <h3>Panel en vivo</h3><div class="sp"></div>
+      <div class="seg">
+        <span class="small muted" style="margin-right:4px">Últimos</span>
+        {% for m in [3,6,12,24] %}<a class="{{ 'on' if m==months }}" href="?months={{ m }}">{{ m }}m</a>{% endfor %}
+      </div>
     </div>
 
     {% if dash.gsc_totals %}
-    <h4 class="small muted" style="margin:10px 0 6px;text-transform:uppercase;letter-spacing:.4px">Visibilidad en Google (Search Console)</h4>
-    <div class="kgrid">
-      <div class="kc"><div class="n">{{ fmt(dash.buckets.total) }}</div><div class="l">Keywords</div></div>
-      <div class="kc"><div class="n">{{ fmt(dash.buckets.top3) }}</div><div class="l">Top 3</div></div>
-      <div class="kc"><div class="n">{{ fmt(dash.buckets.top10) }}</div><div class="l">Top 10</div></div>
-      <div class="kc"><div class="n">{{ fmt(dash.gsc_totals.clicks) }}</div><div class="l">Clics</div></div>
-      <div class="kc"><div class="n">{{ fmt(dash.gsc_totals.impressions) }}</div><div class="l">Impresiones</div></div>
-      <div class="kc"><div class="n">{{ dash.gsc_totals.position }}</div><div class="l">Posición media</div></div>
+    <span class="section-eyebrow">Visibilidad en Google · Search Console</span>
+    <div class="kpi-row" style="margin-bottom:18px">
+      <div class="kpi"><span class="label">Keywords</span><div class="value">{{ fmt(dash.buckets.total) }}</div></div>
+      <div class="kpi"><span class="label">Top 3</span><div class="value">{{ fmt(dash.buckets.top3) }}</div></div>
+      <div class="kpi"><span class="label">Top 10</span><div class="value">{{ fmt(dash.buckets.top10) }}</div></div>
+      <div class="kpi"><span class="label">Clics</span><div class="value">{{ fmt(dash.gsc_totals.clicks) }}</div></div>
+      <div class="kpi"><span class="label">Impresiones</span><div class="value">{{ fmt(dash.gsc_totals.impressions) }}</div></div>
+      <div class="kpi accent"><span class="label">Posición media</span><div class="value">{{ dash.gsc_totals.position }}</div></div>
     </div>
     {% endif %}
 
     {% if dash.ga4 %}
-    <h4 class="small muted" style="margin:16px 0 6px;text-transform:uppercase;letter-spacing:.4px">Tráfico (Google Analytics 4)</h4>
-    <div class="kgrid">
-      <div class="kc"><div class="n">{{ fmt(dash.ga4.totals.sessions) }}</div><div class="l">Sesiones</div></div>
-      <div class="kc"><div class="n">{{ fmt(dash.ga4.totals.users) }}</div><div class="l">Usuarios</div></div>
-      <div class="kc"><div class="n">{{ fmt(dash.ga4.totals.new_users) }}</div><div class="l">Nuevos</div></div>
-      <div class="kc"><div class="n">{{ fmt(dash.ga4.totals.pageviews) }}</div><div class="l">Vistas</div></div>
+    <span class="section-eyebrow">Tráfico · Google Analytics 4</span>
+    <div class="kpi-row" style="margin-bottom:14px">
+      <div class="kpi good"><span class="label">Sesiones</span><div class="value">{{ fmt(dash.ga4.totals.sessions) }}</div></div>
+      <div class="kpi"><span class="label">Usuarios</span><div class="value">{{ fmt(dash.ga4.totals.users) }}</div></div>
+      <div class="kpi"><span class="label">Nuevos</span><div class="value">{{ fmt(dash.ga4.totals.new_users) }}</div></div>
+      <div class="kpi"><span class="label">Vistas</span><div class="value">{{ fmt(dash.ga4.totals.pageviews) }}</div></div>
     </div>
-    <div style="margin-top:12px">{{ bar_chart(dash.ga4.rows, 'sessions', color='#1cbce4')|safe }}</div>
+    <div class="chart">{{ bar_chart(dash.ga4.rows, 'sessions', color='#1cbce4')|safe }}</div>
     {% endif %}
 
     {% if dash.gsc_monthly %}
-    <h4 class="small muted" style="margin:16px 0 6px;text-transform:uppercase;letter-spacing:.4px">Clics en Google por mes</h4>
-    <div>{{ bar_chart(dash.gsc_monthly, 'clicks', color='#f46434')|safe }}</div>
+    <span class="section-eyebrow" style="margin-top:8px">Clics en Google por mes</span>
+    <div class="chart">{{ bar_chart(dash.gsc_monthly, 'clicks', color='#f46434')|safe }}</div>
     {% endif %}
 
     {% if dash.keywords %}
-    <h4 class="small muted" style="margin:16px 0 6px;text-transform:uppercase;letter-spacing:.4px">Top keywords y su posición</h4>
-    <table>
-      <tr><th>Keyword</th><th>Impresiones</th><th>Clics</th><th>Posición</th></tr>
-      {% for k in dash.keywords[:15] %}
-      <tr><td>{{ k.query }}</td><td class="small">{{ fmt(k.impressions) }}</td><td class="small">{{ fmt(k.clicks) }}</td><td class="small">{{ k.position }}</td></tr>
-      {% endfor %}
-    </table>
+    <span class="section-eyebrow" style="margin-top:8px">Top keywords y su posición</span>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Keyword</th><th>Impresiones</th><th>Clics</th><th>Posición</th></tr></thead>
+        <tbody>
+        {% for k in dash.keywords[:15] %}
+          <tr><td><b>{{ k.query }}</b></td><td>{{ fmt(k.impressions) }}</td><td>{{ fmt(k.clicks) }}</td><td>{{ k.position }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
     {% endif %}
 
     {% if dash.warnings %}<p class="hint" style="margin-top:12px">⚠ {{ dash.warnings|join(' · ') }}</p>{% endif %}
   </div>
 {% endif %}
 
-<div class="card">
-  <h3>Fuentes de datos</h3>
-  <table>
-    <tr><td>Cuenta de Google</td><td>{% if project.account_email %}{{ project.account_email }}{% else %}<span class="tag off">sin conectar</span>{% endif %}</td></tr>
-    <tr><td>Google Analytics 4</td><td>{% if project.ga4_property %}{{ project.ga4_name or project.ga4_property }}{% else %}<span class="tag off">sin asignar</span>{% endif %}</td></tr>
-    <tr><td>Search Console</td><td>{% if project.gsc_site %}{{ project.gsc_site }}{% else %}<span class="tag off">sin asignar</span>{% endif %}</td></tr>
-    <tr><td>Competidores</td><td>{% if competitors %}{{ competitors|join(', ') }}{% else %}<span class="muted">—</span>{% endif %}</td></tr>
-  </table>
-  <div style="margin-top:14px" class="row-actions">
-    <a class="btn ghost sm" href="{{ url_for('main.configure_project', pid=project.id) }}">Editar fuentes</a>
-    <form method="post" action="{{ url_for('main.delete_project', pid=project.id) }}"
-          onsubmit="return confirm('¿Eliminar este proyecto?')">
-      <button class="btn danger sm">Eliminar proyecto</button>
+<div class="grid2">
+  <div class="card">
+    <div class="card-head"><h3>Fuentes de datos</h3></div>
+    <div class="tbl-wrap">
+      <table>
+        <tbody>
+        <tr><td>Cuenta de Google</td><td style="text-align:right">{% if project.account_email %}<b>{{ project.account_email }}</b>{% else %}<span class="pill off">sin conectar</span>{% endif %}</td></tr>
+        <tr><td>Analytics 4</td><td style="text-align:right">{% if project.ga4_property %}<span class="pill ok">OK</span>{% else %}<span class="pill off">sin asignar</span>{% endif %}</td></tr>
+        <tr><td>Search Console</td><td style="text-align:right">{% if project.gsc_site %}<span class="pill ok">OK</span>{% else %}<span class="pill off">sin asignar</span>{% endif %}</td></tr>
+        <tr><td>Competidores</td><td style="text-align:right">{% if competitors %}{{ competitors|join(', ') }}{% else %}<span class="muted">—</span>{% endif %}</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="row-actions" style="margin-top:16px">
+      <a class="btn outline sm" href="{{ url_for('main.configure_project', pid=project.id) }}">Editar fuentes</a>
+      <form method="post" action="{{ url_for('main.delete_project', pid=project.id) }}" onsubmit="return confirm('¿Eliminar este proyecto?')">
+        <button class="btn danger sm">Eliminar</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3>Generar justificación</h3></div>
+    <form method="post" action="{{ url_for('main.generate', pid=project.id) }}">
+      <div class="grid2">
+        <div><label>Inicio del periodo</label><input type="date" name="start" required></div>
+        <div><label>Fin del periodo</label><input type="date" name="end" value="{{ today }}" required></div>
+      </div>
+      <label>Nombre del cliente (portada)</label>
+      <input type="text" name="client_name" value="{{ project.name }}">
+      <div class="grid2">
+        <div><label>Fase / título</label><input type="text" name="fase" value="2ª FASE DE JUSTIFICACIÓN SITIO WEB Y PRESENCIA EN INTERNET"></div>
+        <div><label>Fecha de elaboración</label><input type="date" name="fecha_elaboracion" value="{{ today }}"></div>
+      </div>
+      <div class="row-actions" style="margin-top:18px">
+        <button class="btn accent" type="submit">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/></svg>
+          Generar informe PDF
+        </button>
+      </div>
+      <div class="hint" style="margin-top:8px">Lee los datos reales de Google y rastrea la web. Puede tardar ~1 min.</div>
     </form>
   </div>
 </div>
 
 <div class="card">
-  <h3>Generar informe de justificación</h3>
-  <form method="post" action="{{ url_for('main.generate', pid=project.id) }}">
-    <div class="grid cols2">
-      <div>
-        <label>Inicio del periodo</label>
-        <input type="date" name="start" required>
-      </div>
-      <div>
-        <label>Fin del periodo</label>
-        <input type="date" name="end" value="{{ today }}" required>
-      </div>
-    </div>
-    <label>Nombre del cliente (portada)</label>
-    <input type="text" name="client_name" value="{{ project.name }}">
-    <div class="grid cols2">
-      <div>
-        <label>Fase / título de la justificación</label>
-        <input type="text" name="fase" value="2ª FASE DE JUSTIFICACIÓN SITIO WEB Y PRESENCIA EN INTERNET">
-      </div>
-      <div>
-        <label>Fecha de elaboración</label>
-        <input type="date" name="fecha_elaboracion" value="{{ today }}">
-      </div>
-    </div>
-    <div style="margin-top:16px">
-      <button class="btn orange" type="submit">Generar informe PDF</button>
-      <span class="hint">Lee los datos reales de Google y rastrea la web. Puede tardar ~1 minuto.</span>
-    </div>
-  </form>
-</div>
-
-<div class="card">
-  <h3>Informes generados</h3>
+  <div class="card-head"><h3>Informes generados</h3></div>
   {% if reports %}
-    <table>
-      <tr><th>Archivo</th><th>Periodo</th><th>Fecha</th><th></th></tr>
-      {% for r in reports %}
-      <tr>
-        <td class="small">{{ r.filename }}</td>
-        <td class="small">{{ r.period_start }} → {{ r.period_end }}</td>
-        <td class="small muted">{{ r.created_at }}</td>
-        <td class="right"><a class="btn cian sm" href="{{ url_for('main.download_report', filename=r.filename) }}" target="_blank">Abrir PDF</a></td>
-      </tr>
-      {% endfor %}
-    </table>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Archivo</th><th>Periodo</th><th>Fecha</th><th></th></tr></thead>
+        <tbody>
+        {% for r in reports %}
+          <tr>
+            <td class="small"><b>{{ r.filename }}</b></td>
+            <td class="small muted">{{ r.period_start }} → {{ r.period_end }}</td>
+            <td class="small muted">{{ r.created_at }}</td>
+            <td style="text-align:right"><a class="btn cyan sm" href="{{ url_for('main.download_report', filename=r.filename) }}" target="_blank">Abrir PDF</a></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
   {% else %}
-    <p class="empty">Todavía no has generado ningún informe para esta web.</p>
+    <div class="empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+      <div>Todavía no has generado ningún informe para esta web.</div>
+    </div>
   {% endif %}
 </div>
 {% endblock %}

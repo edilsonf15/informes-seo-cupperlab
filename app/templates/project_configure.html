@@ -1,42 +1,40 @@
 {% extends "base.html" %}
-{% block title %}Configurar {{ project.name }}{% endblock %}
+{% block page_title %}Configurar {{ project.name }}{% endblock %}
+{% block page_active %}panel{% endblock %}
+{% block topbar_title %}Configurar fuentes{% endblock %}
+{% block page_eyebrow %}{{ project.name }}{% endblock %}
 {% block body %}
-<h1>Configurar fuentes de datos</h1>
-<p class="lead">{{ project.name }} · {{ project.domain }}</p>
+<p class="lead">{{ project.domain }}</p>
 
 {% if not project.account_id %}
-  <div class="flash warn">Este proyecto no tiene cuenta de Google asignada. Vuelve atrás y elige una, o conéctala en el panel.</div>
+  <div class="flash warn" style="margin-bottom:18px">Este proyecto no tiene cuenta de Google asignada. Conéctala en el Panel y vuelve.</div>
 {% elif load_error %}
-  <div class="flash error">No se pudieron cargar las propiedades: {{ load_error }}</div>
+  <div class="flash error" style="margin-bottom:18px">No se pudieron cargar las propiedades: {{ load_error }}</div>
 {% endif %}
 
-<div class="card">
+<div class="card" style="max-width:720px">
   <form method="post">
     <label>Propiedad de Google Analytics 4</label>
     <select name="ga4_property">
       <option value="">— ninguna —</option>
-      {% for p in properties %}
-        <option value="{{ p.property }}" {{ 'selected' if p.property == project.ga4_property }}>{{ p.display }}</option>
-      {% endfor %}
+      {% for p in properties %}<option value="{{ p.property }}" {{ 'selected' if p.property == project.ga4_property }}>{{ p.display }}</option>{% endfor %}
     </select>
     <div class="hint">De aquí sale la evolución de tráfico de los 12 meses (reemplaza SE Ranking).</div>
 
     <label>Sitio de Search Console</label>
     <select name="gsc_site">
       <option value="">— ninguno —</option>
-      {% for s in sites %}
-        <option value="{{ s.site }}" {{ 'selected' if s.site == project.gsc_site }}>{{ s.site }} ({{ s.permission }})</option>
-      {% endfor %}
+      {% for s in sites %}<option value="{{ s.site }}" {{ 'selected' if s.site == project.gsc_site }}>{{ s.site }} ({{ s.permission }})</option>{% endfor %}
     </select>
-    <div class="hint">De aquí salen las keywords reales, posiciones, clics e impresiones (reemplaza Sistrix).</div>
+    <div class="hint">De aquí salen keywords reales, posiciones, clics e impresiones.</div>
 
     <label>Competidores (uno por línea, opcional)</label>
     <textarea name="competitors" placeholder="canarypro.es&#10;soleracanarias.com&#10;reforcasa.net">{{ competitors }}</textarea>
-    <div class="hint">Para la sección de análisis de la competencia.</div>
+    <div class="hint">Para la sección de competencia (índice de visibilidad de Sistrix).</div>
 
-    <div style="margin-top:18px">
-      <button class="btn" type="submit">Guardar configuración</button>
-      <a class="btn ghost" href="{{ url_for('main.project_detail', pid=project.id) }}">Ir al proyecto</a>
+    <div class="row-actions" style="margin-top:22px">
+      <button class="btn cyan" type="submit">Guardar configuración</button>
+      <a class="btn outline" href="{{ url_for('main.project_detail', pid=project.id) }}">Ir al proyecto</a>
     </div>
   </form>
 </div>

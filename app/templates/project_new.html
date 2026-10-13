@@ -1,9 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Nuevo proyecto{% endblock %}
+{% block page_title %}Nuevo proyecto{% endblock %}
+{% block page_active %}nuevo{% endblock %}
+{% block topbar_title %}Nuevo proyecto{% endblock %}
+{% block page_eyebrow %}Cupperlab · SEO{% endblock %}
 {% block body %}
-<h1>Nuevo proyecto</h1>
 <p class="lead">Un proyecto por web. Después lo conectarás a su propiedad de Analytics y Search Console.</p>
-<div class="card">
+<div class="card" style="max-width:640px">
   <form method="post">
     <label>Nombre de la web / cliente</label>
     <input type="text" name="name" placeholder="Ej.: Reformas General Santi" required>
@@ -16,15 +18,13 @@
     <label>Cuenta de Google que da acceso</label>
     <select name="account_id">
       <option value="">— elegir después —</option>
-      {% for a in accounts %}
-        <option value="{{ a.id }}">{{ a.email }}</option>
-      {% endfor %}
+      {% for a in accounts %}<option value="{{ a.id }}">{{ a.email }}</option>{% endfor %}
     </select>
-    <div class="hint">La cuenta que tiene permiso en el Analytics y Search Console de esta web.</div>
+    <div class="hint">La cuenta con permiso en el Analytics y Search Console de esta web.</div>
 
-    <div style="margin-top:18px">
-      <button class="btn" type="submit">Crear y configurar fuentes de datos →</button>
-      <a class="btn ghost" href="{{ url_for('main.dashboard') }}">Cancelar</a>
+    <div class="row-actions" style="margin-top:22px">
+      <button class="btn cyan" type="submit">Crear y configurar fuentes →</button>
+      <a class="btn outline" href="{{ url_for('main.dashboard') }}">Cancelar</a>
     </div>
   </form>
 </div>

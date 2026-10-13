@@ -6,25 +6,36 @@
   <title>Acceso · Cupperlab Informes SEO</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <style>
-    body{display:flex;align-items:center;justify-content:center;min-height:100vh;
-         background:#0e1319;background:radial-gradient(1200px 600px at 50% -10%,#163247,#0e1319)}
-    .login{background:#fff;border-radius:16px;padding:34px 32px;width:360px;
-           box-shadow:0 20px 60px rgba(0,0,0,.4)}
-    .login .logo{font-weight:800;font-size:24px;text-align:center;margin-bottom:4px}
-    .login .logo b{color:#1cbce4}
-    .login .sub{text-align:center;color:#6a7682;font-size:13px;margin-bottom:22px}
+    body{min-height:100vh;display:flex;align-items:center;justify-content:center;
+      background:var(--ink-950);position:relative;overflow:hidden}
+    body::before{content:"";position:absolute;width:900px;height:900px;left:50%;top:-20%;
+      transform:translateX(-50%);background:var(--glow-cyan);pointer-events:none}
+    .login{position:relative;z-index:1;width:380px;max-width:92vw;background:var(--white);
+      border-radius:var(--r-xl);padding:38px 34px 32px;box-shadow:var(--sh-lg)}
+    .login .wm{text-align:center;margin-bottom:6px}
+    .login .wm img{height:34px}
+    .login .eyebrow{text-align:center;font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;
+      text-transform:uppercase;color:var(--ink-400);margin-bottom:24px}
+    .login h2{text-align:center;font-size:20px;margin-bottom:4px}
+    .login .sub{text-align:center;color:var(--ink-400);font-size:13px;margin-bottom:20px}
+    .login .btn{width:100%;justify-content:center;margin-top:18px;padding:12px}
+    .login .foot{text-align:center;margin-top:20px;font-family:var(--font-mono);font-size:10px;
+      letter-spacing:.12em;text-transform:uppercase;color:var(--ink-300)}
   </style>
 </head>
 <body>
   <form class="login" method="post">
-    <div class="logo"><b>Cupper</b>lab</div>
-    <div class="sub">Informes SEO · Acceso</div>
+    <div class="wm"><img src="{{ url_for('static', filename='brand/cupperlab-wordmark.png') }}" alt="Cupperlab"></div>
+    <div class="eyebrow">Informes SEO</div>
+    <h2>Bienvenido</h2>
+    <div class="sub">Accede para gestionar tus informes de justificación.</div>
     {% with messages = get_flashed_messages(with_categories=true) %}
-      {% for cat, msg in messages %}<div class="flash {{ cat }}">{{ msg }}</div>{% endfor %}
+      {% for cat, msg in messages %}<div class="flash {{ cat }}" style="margin-bottom:12px">{{ msg }}</div>{% endfor %}
     {% endwith %}
     <label>Contraseña</label>
-    <input type="password" name="password" autofocus required>
-    <button class="btn" type="submit" style="width:100%;margin-top:16px">Entrar</button>
+    <input type="password" name="password" autofocus required placeholder="••••••••">
+    <button class="btn cyan" type="submit">Entrar</button>
+    <div class="foot">Mejoramos tu rentabilidad</div>
   </form>
 </body>
 </html>

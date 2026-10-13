@@ -1,31 +1,31 @@
 {% extends "base.html" %}
-{% block title %}Ajustes{% endblock %}
+{% block page_title %}Ajustes{% endblock %}
+{% block page_active %}ajustes{% endblock %}
+{% block topbar_title %}Ajustes{% endblock %}
+{% block page_eyebrow %}Cupperlab · SEO{% endblock %}
 {% block body %}
-<h1>Ajustes</h1>
-<p class="lead">Conexiones adicionales de la app.</p>
+<p class="lead">Conexiones adicionales de la aplicación.</p>
 
-<div class="card">
-  <h3>Sistrix (índice de visibilidad de la competencia)</h3>
+<div class="card" style="max-width:720px">
+  <div class="card-head">
+    <h3>Sistrix · Índice de visibilidad de la competencia</h3><div class="sp"></div>
+    {% if sistrix_set %}<span class="pill ok">Conectado</span>{% else %}<span class="pill off">sin conectar</span>{% endif %}
+  </div>
   <p class="small">Es la única pieza que Google no da gratis. Con tu clave de Sistrix, la app saca
      automáticamente el índice de visibilidad del beneficiario y de sus competidores.</p>
-  <ol class="steps" style="margin:10px 0 16px">
+  <ol class="steps">
     <li>Entra en <b>sistrix.com</b> con tu cuenta.</li>
-    <li>Arriba a la derecha: tu nombre → <b>Cuenta</b> → <b>Acceso API</b> (API).</li>
+    <li>Arriba a la derecha: tu nombre → <b>Cuenta-Ajustes</b> → sección <b>API</b>.</li>
     <li>Copia la <b>API key</b> y pégala aquí abajo.</li>
   </ol>
-  <form method="post">
+  <form method="post" style="margin-top:8px">
     <label>Sistrix API key</label>
-    <input type="text" name="sistrix_api_key" placeholder="{{ masked or 'pega aquí tu clave' }}"
-           autocomplete="off">
+    <input type="text" name="sistrix_api_key" placeholder="{{ masked or 'pega aquí tu clave' }}" autocomplete="off">
     {% if sistrix_set %}<div class="hint">Ya hay una clave guardada ({{ masked }}). Escribe una nueva solo si quieres cambiarla.</div>{% endif %}
-
     <label>País del índice (código)</label>
-    <input type="text" name="sistrix_country" value="{{ country }}" style="max-width:120px">
-    <div class="hint">Para España: <code>es</code>. El índice de visibilidad depende del país.</div>
-
-    <div style="margin-top:16px">
-      <button class="btn" type="submit">Guardar</button>
-    </div>
+    <input type="text" name="sistrix_country" value="{{ country }}" style="max-width:140px">
+    <div class="hint">Para España: <code>es</code>.</div>
+    <div class="row-actions" style="margin-top:20px"><button class="btn cyan" type="submit">Guardar</button></div>
   </form>
 </div>
 {% endblock %}
