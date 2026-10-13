@@ -96,6 +96,21 @@ def monthly(creds, site, start, end):
     return rows
 
 
+def daily(creds, site, start, end):
+    """Serie diaria de clics/impresiones/posición (para la gráfica de evolución por fechas)."""
+    resp = _query(creds, site, start, end, dimensions=["date"], row_limit=25000)
+    rows = []
+    for r in resp.get("rows", []):
+        rows.append({
+            "date": r["keys"][0],                     # 'YYYY-MM-DD'
+            "clicks": int(r.get("clicks", 0)),
+            "impressions": int(r.get("impressions", 0)),
+            "position": round(r.get("position", 0), 1),
+        })
+    rows.sort(key=lambda x: x["date"])
+    return rows
+
+
 def coverage(creds, site):
     """Sitemaps enviados a Search Console (enviadas vs indexadas por Google)."""
     try:

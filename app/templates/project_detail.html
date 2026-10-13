@@ -78,10 +78,10 @@
       </div>
     </div>
     {% endif %}
-    {% if dash.gsc_monthly %}
+    {% if dash.gsc_daily %}
     <div class="card">
-      <div class="card-head"><h3>Impresiones por mes</h3></div>
-      {{ monthly_bars(dash.gsc_monthly,'impressions',start=start,end=end,color='#1cbce4',height=180)|safe }}
+      <div class="card-head"><h3>Evolución de impresiones</h3></div>
+      {{ trend_area(dash.gsc_daily,'impressions',start=start,end=end,color='#1cbce4',height=180)|safe }}
     </div>
     {% endif %}
   </div>

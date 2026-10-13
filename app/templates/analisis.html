@@ -99,11 +99,11 @@
       </div>
     </div>
     {% endif %}
-    {% if dash.gsc_monthly %}
+    {% if dash.gsc_daily %}
     <div class="card">
-      <div class="card-head"><h3>Impresiones por mes</h3></div>
-      {{ monthly_bars(dash.gsc_monthly,'impressions',start=start,end=end,color='#1cbce4',height=180)|safe }}
-      <p class="hint" style="margin-top:6px">Barras por mes. Un mes atenuado y marcado «parcial» no está completo en el rango elegido (no es una caída real).</p>
+      <div class="card-head"><h3>Evolución de impresiones</h3></div>
+      {{ trend_area(dash.gsc_daily,'impressions',start=start,end=end,color='#1cbce4',height=190)|safe }}
+      <p class="hint" style="margin-top:6px">Evolución por fechas en el periodo elegido. Se agrupa por día, semana o mes según lo amplio que sea el rango.</p>
     </div>
     {% endif %}
   </div>

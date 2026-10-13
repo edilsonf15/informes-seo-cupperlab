@@ -172,6 +172,7 @@ def gather_report_data(project, start, end, include_crawl=True):
         site = project["gsc_site"]
         try:
             data["gsc_totals"] = gsc.totals(creds, site, start, end)
+            data["gsc_daily"] = gsc.daily(creds, site, start, end)
             data["gsc_monthly"] = gsc.monthly(creds, site, start, end)
             data["keywords"] = gsc.keywords(creds, site, start, end, limit=1000)
             data["top_pages"] = gsc.top_pages(creds, site, start, end, limit=30)

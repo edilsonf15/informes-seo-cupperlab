@@ -185,7 +185,7 @@ def project_detail(pid):
                            start=start, end=end,
                            period_ini=_dmy(start), period_fin=_dmy(end),
                            bar_chart=report.bar_chart, area_chart=report.area_chart,
-                           donut=report.donut, monthly_bars=report.monthly_bars, fmt=report._fmt)
+                           donut=report.donut, trend_area=report.trend_area, fmt=report._fmt)
 
 
 # ---------------- Site Audit (Módulo 1) ----------------
@@ -254,7 +254,7 @@ def analisis(pid):
                            start=start, end=end, site_name=site_name,
                            period_ini=_dmy(start), period_fin=_dmy(end),
                            area_chart=report.area_chart, donut=report.donut,
-                           monthly_bars=report.monthly_bars, fmt=report._fmt)
+                           trend_area=report.trend_area, fmt=report._fmt)
 
 
 # ---------------- Rank Tracker (Módulo 2) ----------------

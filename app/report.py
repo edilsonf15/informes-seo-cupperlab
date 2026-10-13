@@ -2,7 +2,7 @@
 import os
 import base64
 import calendar
-from datetime import date
+from datetime import date, timedelta
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from playwright.sync_api import sync_playwright
 from . import config
@@ -78,6 +78,85 @@ def _fmt(v):
     except Exception:
         return str(v)
     return f"{v:,}".replace(",", ".")
+
+
+def _bucket_series(daily, value_key, start=None, end=None):
+    """Agrupa la serie diaria por día/semana/mes según lo largo que sea el rango."""
+    rows = [r for r in (daily or []) if r.get("date")]
+    if not rows:
+        return []
+    try:
+        span = (date.fromisoformat(end) - date.fromisoformat(start)).days
+    except (ValueError, TypeError):
+        span = len(rows)
+    gran = "day" if span <= 45 else ("week" if span <= 180 else "month")
+    buckets = {}
+    order = []
+    for r in rows:
+        try:
+            d = date.fromisoformat(r["date"])
+        except (ValueError, TypeError):
+            continue
+        if gran == "day":
+            key = r["date"]
+            lbl = f"{d.day} {_MESES[d.month - 1]}"
+        elif gran == "week":
+            wk = d - timedelta(days=d.weekday())
+            key = wk.isoformat()
+            lbl = f"{wk.day} {_MESES[wk.month - 1]}"
+        else:
+            key = f"{d.year:04d}-{d.month:02d}"
+            lbl = _month_label(key)
+        if key not in buckets:
+            buckets[key] = {"label": lbl, "value": 0}
+            order.append(key)
+        buckets[key]["value"] += (r.get(value_key) or 0)
+    return [buckets[k] for k in order]
+
+
+def trend_area(daily, value_key, start=None, end=None, color="#1cbce4", height=180):
+    """Evolución POR FECHAS (área + línea). Se adapta a día/semana/mes y nunca se rompe."""
+    pts_data = _bucket_series(daily, value_key, start, end)
+    if not pts_data:
+        return '<div class="small muted" style="padding:18px 2px">Sin datos en el periodo elegido.</div>'
+    vals = [max(0, b["value"]) for b in pts_data]
+    labels = [b["label"] for b in pts_data]
+    n = len(vals)
+    vmax = max(vals) or 1
+    W, H, pad = 680, height, 14
+    plot_h = H - 36
+    stepx = (W - 2 * pad) / max(1, n - 1)
+    pts = []
+    for i, v in enumerate(vals):
+        x = pad + i * stepx
+        y = 10 + plot_h - (plot_h * v / vmax)
+        pts.append((x, y))
+    if n == 1:
+        pts = [(pad, pts[0][1]), (W - pad, pts[0][1])]
+    line = " ".join(f"{x:.1f},{y:.1f}" for x, y in pts)
+    area = f"{pts[0][0]:.1f},{10 + plot_h:.1f} " + line + f" {pts[-1][0]:.1f},{10 + plot_h:.1f}"
+    dots = "".join(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="3" fill="{color}"/>' for x, y in pts)
+    vlabels = ""
+    if n <= 14:
+        vlabels = "".join(
+            f'<text x="{pts[i][0]:.1f}" y="{pts[i][1] - 8:.1f}" text-anchor="middle" font-size="9.5" '
+            f'font-weight="700" fill="#11151c" font-family="JetBrains Mono,monospace">{_fmt(vals[i])}</text>'
+            for i in range(n))
+    show = max(1, round(n / 8))
+    xl = "".join(
+        f'<text x="{pad + i * stepx:.1f}" y="{H - 6}" text-anchor="middle" font-size="9" '
+        f'fill="#58626f" font-family="Plus Jakarta Sans,sans-serif">{labels[i]}</text>'
+        for i in range(n) if i % show == 0 or i == n - 1)
+    gid = f"tr{abs(hash(color + str(vmax))) % 99999}"
+    return (
+        f'<svg viewBox="0 0 {W} {H}" width="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">'
+        f'<defs><linearGradient id="{gid}" x1="0" x2="0" y1="0" y2="1">'
+        f'<stop offset="0" stop-color="{color}" stop-opacity="0.22"/>'
+        f'<stop offset="1" stop-color="{color}" stop-opacity="0"/></linearGradient></defs>'
+        f'<polygon points="{area}" fill="url(#{gid})"/>'
+        f'<polyline points="{line}" fill="none" stroke="{color}" stroke-width="2.5" '
+        f'stroke-linejoin="round"/>{dots}{vlabels}{xl}</svg>'
+    )
 
 
 def monthly_bars(series, value_key, start=None, end=None, color="#1cbce4", height=170):
