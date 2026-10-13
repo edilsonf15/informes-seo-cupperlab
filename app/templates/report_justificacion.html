@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>{{ titulo }} · {{ cliente }}</title>
+<style>
+  * { box-sizing:border-box; }
+  body { font-family:Arial,"Helvetica Neue",Helvetica,sans-serif; color:#111;
+         font-size:12px; line-height:1.55; margin:0; }
+  h1,h2,h3 { color:#0e1319; margin:0; }
+  .section { break-before:page; padding-top:4px; }
+  .section:first-of-type { break-before:auto; }
+  h2.sec { font-size:17px; border-bottom:2px solid #12324a; padding-bottom:6px;
+           margin-bottom:12px; color:#12324a; }
+  h3.sub { font-size:13.5px; margin:16px 0 6px; color:#12324a; }
+  p { margin:0 0 9px; text-align:justify; }
+  table.t { width:100%; border-collapse:collapse; margin:8px 0 14px; font-size:11px; }
+  table.t th { background:#12324a; color:#fff; text-align:left; padding:6px 8px; font-size:10.5px; }
+  table.t td { border:1px solid #d6dde4; padding:5px 8px; }
+  table.t tr:nth-child(even) td { background:#f6f8fa; }
+  .kpis { display:flex; gap:10px; margin:10px 0 16px; }
+  .kpi { flex:1; border:1px solid #d6dde4; border-radius:8px; padding:11px 12px; text-align:center; }
+  .kpi .n { font-size:22px; font-weight:800; color:#12324a; }
+  .kpi .l { font-size:10px; color:#667; text-transform:uppercase; letter-spacing:.4px; }
+  .note { background:#f3f7fa; border-left:4px solid #1cbce4; padding:9px 12px; margin:10px 0;
+          font-size:11px; color:#334; }
+  .warnbox { background:#fff8ec; border-left:4px solid #dfa019; padding:9px 12px; margin:10px 0;
+             font-size:11px; color:#5a4410; }
+  .brokenbox { background:#fdf0f0; border:1px solid #f0c7c7; border-radius:8px; padding:10px 12px; margin:10px 0; }
+  .brokenbox code { display:block; font-size:10.5px; color:#9a2626; margin:2px 0; word-break:break-all; }
+  .chart { margin:6px 0 14px; }
+  .ok { color:#1f9d6b; font-weight:700; } .bad { color:#d64343; font-weight:700; }
+  .mid { color:#dfa019; font-weight:700; }
+  ul.kw { columns:2; column-gap:26px; margin:6px 0 12px; padding-left:18px; font-size:11px; }
+  ul.kw li { margin:2px 0; }
+  /* Portada */
+  .cover { height:96vh; display:flex; flex-direction:column; }
+  .cover .band { background:#0e1319; color:#fff; padding:30px 28px; border-radius:10px; }
+  .cover .band .tag { color:#1cbce4; font-family:monospace; font-size:11px; letter-spacing:1px; }
+  .cover .band h1 { color:#fff; font-size:27px; margin:10px 0 4px; }
+  .cover .band h2 { color:#cfe; font-size:15px; font-weight:500; }
+  .cover .meta { margin-top:26px; border:1px solid #d6dde4; border-radius:10px; padding:18px 20px; }
+  .cover .meta table { width:100%; font-size:12.5px; }
+  .cover .meta td { padding:6px 4px; border-bottom:1px solid #eef2f5; }
+  .cover .meta td:first-child { color:#667; width:38%; }
+  .cover .index { margin-top:22px; }
+  .cover .index h3 { font-size:13px; color:#12324a; margin-bottom:8px; }
+  .cover .index ol { margin:0; padding-left:20px; font-size:12px; color:#333; }
+  .cover .index li { margin:3px 0; }
+  .cover .foot { margin-top:auto; color:#889; font-size:10.5px; }
+  .cover .foot b { color:#12324a; }
+  .foot-generado { margin-top:20px; color:#99a; font-size:10px; text-align:center; }
+</style>
+</head>
+<body>
+
+<!-- ===================== PORTADA ===================== -->
+<div class="cover">
+  <div class="band">
+    <div class="tag">COMPILACIÓN DE EVIDENCIAS</div>
+    <h1>{{ titulo }}</h1>
+    <h2>{{ fase }}</h2>
+  </div>
+  <div class="meta">
+    <table>
+      <tr><td>Beneficiario</td><td><b>{{ cliente }}</b></td></tr>
+      <tr><td>Sitio web</td><td>{{ dominio }}</td></tr>
+      <tr><td>Periodo analizado anual</td><td>{{ periodo_ini }} — {{ periodo_fin }}</td></tr>
+      <tr><td>Fecha de elaboración</td><td>{{ fecha_elaboracion }}</td></tr>
+    </table>
+  </div>
+  <div class="index">
+    <h3>Contenido del documento</h3>
+    <ol>
+      <li>Informe de SEO On Page</li>
+      <li>Análisis cuantitativo de palabras clave</li>
+      <li>Análisis cualitativo de palabras clave</li>
+      <li>Indexación y jerarquización del contenido</li>
+      <li>Resumen de la mejora del servicio</li>
+      <li>Análisis de la competencia</li>
+    </ol>
+  </div>
+  <div class="foot">
+    Documento de justificación elaborado por <b>Cupperlab</b> con datos verificados en vivo de
+    Google Analytics, Google Search Console y rastreo directo del sitio.
+  </div>
+</div>
+
+<!-- ============== 1. CUANTITATIVO ============== -->
+<div class="section">
+  <h2 class="sec">1 · Informe de SEO On Page — Análisis cuantitativo de palabras clave</h2>
+  <p>Para el análisis cuantitativo de palabras clave medimos, sobre datos reales de Google Search
+     Console, el número de consultas por las que el dominio <b>{{ dominio }}</b> ha aparecido en los
+     resultados de Google durante el periodo analizado, así como su volumen de impresiones y clics.</p>
+
+  {% if data.gsc_totals %}
+  <div class="kpis">
+    <div class="kpi"><div class="n">{{ fmt(keywords_count) }}</div><div class="l">Palabras clave en Google</div></div>
+    <div class="kpi"><div class="n">{{ fmt(data.gsc_totals.impressions) }}</div><div class="l">Impresiones</div></div>
+    <div class="kpi"><div class="n">{{ fmt(data.gsc_totals.clicks) }}</div><div class="l">Clics</div></div>
+    <div class="kpi"><div class="n">{{ data.gsc_totals.position }}</div><div class="l">Posición media</div></div>
+  </div>
+  {% if buckets %}
+  <div class="kpis">
+    <div class="kpi"><div class="n">{{ fmt(buckets.top3) }}</div><div class="l">Keywords en Top 3</div></div>
+    <div class="kpi"><div class="n">{{ fmt(buckets.top10) }}</div><div class="l">Keywords en Top 10</div></div>
+    <div class="kpi"><div class="n">{{ fmt(buckets.top100) }}</div><div class="l">Keywords en Top 100</div></div>
+  </div>
+  {% endif %}
+  <p>El dominio registra <b>{{ fmt(keywords_count) }} palabras clave</b> con presencia en Google en el
+     periodo, con una posición media de <b>{{ data.gsc_totals.position }}</b>. A continuación se muestra la
+     evolución mensual de impresiones (apariciones en Google), indicador directo del crecimiento de la
+     visibilidad orgánica.</p>
+    {% if data.gsc_monthly %}
+    <div class="chart">{{ bar_chart(data.gsc_monthly, 'impressions', color='#12324a')|safe }}</div>
+    <p class="note">Impresiones = número de veces que una página del sitio apareció en los resultados de
+       Google. Dato real extraído de Google Search Console para el periodo {{ periodo_raw }}.</p>
+    {% endif %}
+  {% else %}
+  <div class="warnbox">La sección cuantitativa se completa al conectar la propiedad de Search Console
+     del dominio. Una vez conectada, se muestran aquí el número real de palabras clave, impresiones,
+     clics y posición media del periodo.</div>
+  {% endif %}
+</div>
+
+<!-- ============== 2. CUALITATIVO ============== -->
+<div class="section">
+  <h2 class="sec">2 · Análisis cualitativo de palabras clave</h2>
+  <p>Se detallan las palabras clave reales por las que el sitio obtiene visibilidad en Google, ordenadas
+     por impresiones. Reflejan la intención de búsqueda de los usuarios y el enfoque del servicio SEO.</p>
+  {% if keywords %}
+    <table class="t">
+      <tr><th>#</th><th>Palabra clave</th><th>Impresiones</th><th>Clics</th><th>CTR</th><th>Posición media</th></tr>
+      {% for k in keywords[:40] %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ k.query }}</td>
+        <td>{{ fmt(k.impressions) }}</td>
+        <td>{{ fmt(k.clicks) }}</td>
+        <td>{{ k.ctr }}%</td>
+        <td>{{ k.position }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% if keywords_count > 40 %}
+    <p class="note">Se muestran las 40 principales de un total de {{ fmt(keywords_count) }} palabras clave
+       detectadas en el periodo. El listado completo está disponible como anexo exportable.</p>
+    {% endif %}
+  {% else %}
+    <div class="warnbox">El listado de palabras clave se genera automáticamente desde Search Console al
+       conectar el sitio.</div>
+  {% endif %}
+</div>
+
+<!-- ============== 3. INDEXACIÓN ============== -->
+<div class="section">
+  <h2 class="sec">3 · Indexación y jerarquización del contenido</h2>
+  <p>Mediante rastreo directo del sitio comprobamos el estado de indexación de las URLs: su código de
+     respuesta (200 correcto, 301 redirección, 404 no encontrado) y su indexabilidad (si es rastreable
+     por los buscadores). Priorizamos las URLs HTML, que son las destinadas a posicionar.</p>
+  {% if data.crawl %}
+    {% set c = data.crawl %}
+    <div class="kpis">
+      <div class="kpi"><div class="n">{{ fmt(c.total_sitemap) }}</div><div class="l">URLs en el sitemap</div></div>
+      <div class="kpi"><div class="n ok">{{ fmt(c.codes.OK) }}</div><div class="l">Respuesta 200</div></div>
+      <div class="kpi"><div class="n {{ 'bad' if c.codes['404'] else '' }}">{{ fmt(c.codes['404']) }}</div><div class="l">Enlaces rotos 404</div></div>
+      <div class="kpi"><div class="n">{{ fmt(c.indexable_count) }}</div><div class="l">Indexables</div></div>
+    </div>
+
+    <h3 class="sub">Composición del mapa del sitio (sitemap)</h3>
+    <table class="t">
+      <tr><th>Tipo de URL</th><th>Cantidad</th><th>Valoración</th></tr>
+      {% for row in c.composition %}
+      <tr>
+        <td>{{ row.type }}</td>
+        <td>{{ fmt(row.count) }}</td>
+        <td>
+          {% if row.type == 'Páginas reales' %}<span class="ok">Contenido a posicionar</span>
+          {% elif row.type == 'Etiquetas / tags' %}<span class="mid">Revisar: no aportan posicionamiento</span>
+          {% elif row.type == 'Fichas / archivos' %}<span class="mid">Revisar en el sitemap</span>
+          {% else %}Secundario{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+
+    {% if c.broken_examples %}
+    <h3 class="sub">Ejemplos de enlaces rotos detectados (404)</h3>
+    <div class="brokenbox">
+      {% for u in c.broken_examples %}<code>{{ u }}</code>{% endfor %}
+    </div>
+    {% endif %}
+
+    <h3 class="sub">Muestra de URLs con su código de respuesta e indexabilidad</h3>
+    <table class="t">
+      <tr><th>URL</th><th>Código</th><th>Indexable</th></tr>
+      {% for r in c.sample[:35] %}
+      <tr>
+        <td style="word-break:break-all">{{ r.url }}</td>
+        <td>{% if r.status=='OK' %}<span class="ok">200</span>{% elif r.status=='404' %}<span class="bad">404</span>{% elif r.status=='REDIR' %}<span class="mid">{{ r.code }}</span>{% else %}{{ r.code or r.status }}{% endif %}</td>
+        <td>{% if r.indexable is sameas true %}<span class="ok">Sí</span>{% elif r.indexable is sameas false %}<span class="bad">No</span>{% else %}—{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    <p class="note">Muestra representativa de {{ fmt(c.checked) }} URLs comprobadas en vivo. Los errores de
+       conexión puntuales (límite del servidor) no se contabilizan como 404.</p>
+    {% if data.coverage %}
+    <h3 class="sub">Sitemaps enviados a Google (Search Console)</h3>
+    <table class="t">
+      <tr><th>Sitemap</th><th>Enviadas</th><th>Indexadas</th><th>Errores</th></tr>
+      {% for s in data.coverage %}
+      <tr><td style="word-break:break-all">{{ s.path }}</td><td>{{ fmt(s.submitted) }}</td><td>{{ fmt(s.indexed) }}</td><td>{{ s.errors }}</td></tr>
+      {% endfor %}
+    </table>
+    {% endif %}
+  {% else %}
+    <div class="warnbox">No se pudo completar el rastreo de indexación en esta ejecución.</div>
+  {% endif %}
+</div>
+
+<!-- ============== 4. MEJORA DEL SERVICIO ============== -->
+<div class="section">
+  <h2 class="sec">4 · Resumen de la mejora del servicio</h2>
+  <p>Evolución del sitio durante los meses del periodo subvencionado, con datos reales de Google
+     Analytics (tráfico) y Google Search Console (visibilidad en Google).</p>
+
+  {% if data.ga4 %}
+    <h3 class="sub">Tráfico del sitio (Google Analytics 4)</h3>
+    <div class="kpis">
+      <div class="kpi"><div class="n">{{ fmt(data.ga4.totals.sessions) }}</div><div class="l">Sesiones</div></div>
+      <div class="kpi"><div class="n">{{ fmt(data.ga4.totals.users) }}</div><div class="l">Usuarios</div></div>
+      <div class="kpi"><div class="n">{{ fmt(data.ga4.totals.new_users) }}</div><div class="l">Usuarios nuevos</div></div>
+      <div class="kpi"><div class="n">{{ fmt(data.ga4.totals.pageviews) }}</div><div class="l">Vistas de página</div></div>
+    </div>
+    <div class="chart">{{ bar_chart(data.ga4.rows, 'sessions', color='#1cbce4')|safe }}</div>
+    <table class="t">
+      <tr><th>Mes</th><th>Sesiones</th><th>Usuarios</th><th>Usuarios nuevos</th><th>Vistas</th></tr>
+      {% for r in data.ga4.rows %}
+      <tr><td>{{ r.month }}</td><td>{{ fmt(r.sessions) }}</td><td>{{ fmt(r.users) }}</td><td>{{ fmt(r.new_users) }}</td><td>{{ fmt(r.pageviews) }}</td></tr>
+      {% endfor %}
+    </table>
+  {% else %}
+    <div class="warnbox">La evolución de tráfico se completa al conectar la propiedad de Google
+       Analytics 4 del dominio.</div>
+  {% endif %}
+
+  {% if data.gsc_monthly %}
+    <h3 class="sub">Visibilidad en Google (Search Console)</h3>
+    <div class="chart">{{ bar_chart(data.gsc_monthly, 'clicks', color='#f46434')|safe }}</div>
+    <table class="t">
+      <tr><th>Mes</th><th>Clics</th><th>Impresiones</th><th>Posición media</th></tr>
+      {% for r in data.gsc_monthly %}
+      <tr><td>{{ r.month }}</td><td>{{ fmt(r.clicks) }}</td><td>{{ fmt(r.impressions) }}</td><td>{{ r.position }}</td></tr>
+      {% endfor %}
+    </table>
+  {% endif %}
+</div>
+
+<!-- ============== 5. COMPETENCIA ============== -->
+<div class="section">
+  <h2 class="sec">5 · Análisis de la competencia</h2>
+  <p>Posicionamiento del beneficiario frente a sus competidores de referencia en función del KPI
+     <b>índice de visibilidad</b> (estándar del sector, fuente: Sistrix), que mide la presencia de cada
+     dominio en los resultados de Google.</p>
+  {% if data.competition and data.competition.series %}
+    {% set maxvi = (data.competition.series | map(attribute='latest') | max) or 1 %}
+    <table class="t">
+      <tr><th>Dominio</th><th>Rol</th><th>Índice de visibilidad</th><th style="width:40%">Comparativa</th></tr>
+      {% for s in data.competition.series | sort(attribute='latest', reverse=true) %}
+      <tr>
+        <td>{% if s.is_beneficiary %}<b>{{ s.domain }}</b>{% else %}{{ s.domain }}{% endif %}</td>
+        <td>{% if s.is_beneficiary %}<span class="ok">Beneficiario</span>{% else %}Competidor{% endif %}</td>
+        <td>{{ s.latest }}</td>
+        <td>
+          <div style="background:#eef2f6;border-radius:4px;height:14px;width:100%">
+            <div style="height:14px;border-radius:4px;width:{{ (100 * s.latest / maxvi)|round(1) }}%;
+                        background:{{ '#1f9d6b' if s.is_beneficiary else '#12324a' }}"></div>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+    <p class="note">Índice de visibilidad por país ({{ data.competition.country }}), fuente Sistrix.
+       Un valor más alto indica mayor presencia orgánica en Google frente al resto de dominios comparados.</p>
+  {% elif competitors %}
+    <table class="t">
+      <tr><th>Dominio</th><th>Rol</th></tr>
+      <tr><td><b>{{ dominio }}</b></td><td class="ok">Beneficiario</td></tr>
+      {% for c in competitors %}<tr><td>{{ c }}</td><td>Competidor</td></tr>{% endfor %}
+    </table>
+    <p class="note">El índice de visibilidad comparado se incorpora al conectar Sistrix en Ajustes.</p>
+  {% else %}
+    <div class="warnbox">Añade los dominios competidores en la configuración del proyecto para incluir la
+       comparativa.</div>
+  {% endif %}
+  <div class="foot-generado">Informe generado el {{ generado }} · Cupperlab · Datos verificados en vivo.</div>
+</div>
+
+</body>
+</html>

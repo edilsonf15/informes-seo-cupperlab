@@ -1,0 +1,210 @@
+"""Rutas (páginas) de la aplicación."""
+import os
+import re
+from datetime import date, timedelta
+from flask import (Blueprint, render_template, request, redirect, url_for,
+                   session, flash, send_from_directory, abort)
+
+from . import config, db, google_oauth, ga4, gsc, service, report
+
+bp = Blueprint("main", __name__)
+
+
+def _slug(text):
+    return re.sub(r"[^a-zA-Z0-9]+", "_", text).strip("_") or "informe"
+
+
+# ---------------- Acceso ----------------
+@bp.before_request
+def _require_login():
+    if request.endpoint in ("main.login", "static", None):
+        return
+    if not session.get("auth"):
+        return redirect(url_for("main.login"))
+
+
+@bp.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        if request.form.get("password") == config.APP_PASSWORD:
+            session["auth"] = True
+            return redirect(url_for("main.dashboard"))
+        flash("Contraseña incorrecta.", "error")
+    return render_template("login.html")
+
+
+@bp.route("/logout")
+def logout():
+    session.pop("auth", None)
+    return redirect(url_for("main.login"))
+
+
+# ---------------- Ajustes ----------------
+@bp.route("/settings", methods=["GET", "POST"])
+def settings():
+    if request.method == "POST":
+        db.set_setting("sistrix_api_key", request.form.get("sistrix_api_key", "").strip())
+        db.set_setting("sistrix_country", request.form.get("sistrix_country", "es").strip() or "es")
+        flash("Ajustes guardados.", "ok")
+        return redirect(url_for("main.settings"))
+    key = db.get_setting("sistrix_api_key", "")
+    masked = (key[:4] + "…" + key[-4:]) if len(key) > 8 else ("" if not key else "configurada")
+    return render_template("settings.html", sistrix_set=bool(key), masked=masked,
+                           country=db.get_setting("sistrix_country", "es"))
+
+
+# ---------------- Panel ----------------
+@bp.route("/")
+def dashboard():
+    return render_template(
+        "dashboard.html",
+        projects=db.list_projects(),
+        accounts=db.list_accounts(),
+        has_client_secret=config.client_secret_exists(),
+    )
+
+
+# ---------------- OAuth con Google ----------------
+@bp.route("/connect")
+def connect():
+    if not config.client_secret_exists():
+        flash("Primero sube el archivo client_secret.json de Google Cloud (ver guía).", "error")
+        return redirect(url_for("main.dashboard"))
+    url, state = google_oauth.authorization_url()
+    session["oauth_state"] = state
+    return redirect(url)
+
+
+@bp.route("/oauth2callback")
+def oauth2callback():
+    state = session.get("oauth_state")
+    try:
+        _, email = google_oauth.finish_and_store(state, request.url)
+        flash(f"Cuenta de Google conectada: {email}", "ok")
+    except Exception as e:
+        flash(f"No se pudo conectar la cuenta: {e}", "error")
+    return redirect(url_for("main.dashboard"))
+
+
+@bp.route("/accounts/<int:account_id>/delete", methods=["POST"])
+def delete_account(account_id):
+    db.delete_account(account_id)
+    flash("Cuenta desconectada.", "ok")
+    return redirect(url_for("main.dashboard"))
+
+
+# ---------------- Proyectos ----------------
+@bp.route("/projects/new", methods=["GET", "POST"])
+def new_project():
+    accounts = db.list_accounts()
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        domain = request.form.get("domain", "").strip()
+        account_id = request.form.get("account_id") or None
+        if not name or not domain:
+            flash("Nombre y dominio son obligatorios.", "error")
+            return render_template("project_new.html", accounts=accounts)
+        pid = db.create_project(name, domain, account_id, None, None, None, [])
+        return redirect(url_for("main.configure_project", pid=pid))
+    return render_template("project_new.html", accounts=accounts)
+
+
+@bp.route("/projects/<int:pid>/configure", methods=["GET", "POST"])
+def configure_project(pid):
+    project = db.get_project(pid)
+    if not project:
+        abort(404)
+    properties, sites, load_error = [], [], None
+    if project["account_id"]:
+        try:
+            creds = google_oauth.credentials_for_account(project["account_id"])
+            properties = ga4.list_properties(creds)
+            sites = gsc.list_sites(creds)
+        except Exception as e:
+            load_error = str(e)
+
+    if request.method == "POST":
+        ga4_property = request.form.get("ga4_property") or None
+        gsc_site = request.form.get("gsc_site") or None
+        ga4_name = next((p["display"] for p in properties if p["property"] == ga4_property), None)
+        competitors = [c.strip() for c in request.form.get("competitors", "").splitlines() if c.strip()]
+        db.update_project(pid, ga4_property=ga4_property, ga4_name=ga4_name,
+                          gsc_site=gsc_site, competitors=competitors)
+        flash("Proyecto configurado.", "ok")
+        return redirect(url_for("main.project_detail", pid=pid))
+
+    return render_template("project_configure.html", project=project,
+                           properties=properties, sites=sites, load_error=load_error,
+                           competitors="\n".join(db.project_competitors(project)))
+
+
+@bp.route("/projects/<int:pid>")
+def project_detail(pid):
+    project = db.get_project(pid)
+    if not project:
+        abort(404)
+    today = date.today()
+    # Rango del panel en vivo (por defecto 12 meses).
+    try:
+        months = int(request.args.get("months", 12))
+    except ValueError:
+        months = 12
+    months = max(1, min(months, 24))
+    start = (today - timedelta(days=30 * months)).isoformat()
+    end = today.isoformat()
+
+    dash = None
+    connected = bool(project["account_id"] and (project["ga4_property"] or project["gsc_site"]))
+    if connected:
+        try:
+            dash = service.dashboard_data(project, start, end)
+        except Exception as e:
+            flash(f"No se pudo cargar el panel en vivo: {e}", "warn")
+
+    return render_template("project_detail.html", project=project,
+                           competitors=db.project_competitors(project),
+                           reports=db.list_reports(pid), today=end,
+                           dash=dash, connected=connected, months=months,
+                           bar_chart=report.bar_chart, fmt=report._fmt)
+
+
+@bp.route("/projects/<int:pid>/delete", methods=["POST"])
+def delete_project(pid):
+    db.delete_project(pid)
+    flash("Proyecto eliminado.", "ok")
+    return redirect(url_for("main.dashboard"))
+
+
+# ---------------- Generación del informe ----------------
+@bp.route("/projects/<int:pid>/generate", methods=["POST"])
+def generate(pid):
+    project = db.get_project(pid)
+    if not project:
+        abort(404)
+    start = request.form.get("start")
+    end = request.form.get("end")
+    client_name = request.form.get("client_name", "").strip()
+    fase = request.form.get("fase", "").strip() or "JUSTIFICACIÓN SITIO WEB Y PRESENCIA EN INTERNET"
+    fecha_elaboracion = request.form.get("fecha_elaboracion") or date.today().isoformat()
+
+    try:
+        data = service.gather_report_data(project, start, end)
+        ctx = service.build_context(project, start, end, data, client_name, fase, fecha_elaboracion)
+        html = report.render_html(ctx)
+        fname = f"Justificacion_{_slug(project['name'])}_{start}_{end}.pdf"
+        pdf_path = os.path.join(config.REPORTS_DIR, fname)
+        report.html_to_pdf(html, pdf_path)
+        db.add_report(pid, fname, start, end)
+        warns = data.get("warnings") or []
+        if warns:
+            flash("Informe generado con avisos: " + " | ".join(warns), "warn")
+        else:
+            flash("Informe generado correctamente con datos reales.", "ok")
+    except Exception as e:
+        flash(f"Error al generar el informe: {e}", "error")
+    return redirect(url_for("main.project_detail", pid=pid))
+
+
+@bp.route("/reports/<path:filename>")
+def download_report(filename):
+    return send_from_directory(config.REPORTS_DIR, filename, as_attachment=False)

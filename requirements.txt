@@ -1,0 +1,9 @@
+# Aplicación de informes SEO para justificación de subvenciones (Cupperlab)
+# Reemplaza SE Ranking + Sistrix + Screaming Frog con datos reales de Google.
+Flask>=3.0
+google-auth>=2.30
+google-auth-oauthlib>=1.2
+google-api-python-client>=2.130
+requests>=2.31
+lxml>=5.0
+playwright>=1.44

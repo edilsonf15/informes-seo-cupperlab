@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Acceso · Cupperlab Informes SEO</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    body{display:flex;align-items:center;justify-content:center;min-height:100vh;
+         background:#0e1319;background:radial-gradient(1200px 600px at 50% -10%,#163247,#0e1319)}
+    .login{background:#fff;border-radius:16px;padding:34px 32px;width:360px;
+           box-shadow:0 20px 60px rgba(0,0,0,.4)}
+    .login .logo{font-weight:800;font-size:24px;text-align:center;margin-bottom:4px}
+    .login .logo b{color:#1cbce4}
+    .login .sub{text-align:center;color:#6a7682;font-size:13px;margin-bottom:22px}
+  </style>
+</head>
+<body>
+  <form class="login" method="post">
+    <div class="logo"><b>Cupper</b>lab</div>
+    <div class="sub">Informes SEO · Acceso</div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}<div class="flash {{ cat }}">{{ msg }}</div>{% endfor %}
+    {% endwith %}
+    <label>Contraseña</label>
+    <input type="password" name="password" autofocus required>
+    <button class="btn" type="submit" style="width:100%;margin-top:16px">Entrar</button>
+  </form>
+</body>
+</html>

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Configurar {{ project.name }}{% endblock %}
+{% block body %}
+<h1>Configurar fuentes de datos</h1>
+<p class="lead">{{ project.name }} · {{ project.domain }}</p>
+
+{% if not project.account_id %}
+  <div class="flash warn">Este proyecto no tiene cuenta de Google asignada. Vuelve atrás y elige una, o conéctala en el panel.</div>
+{% elif load_error %}
+  <div class="flash error">No se pudieron cargar las propiedades: {{ load_error }}</div>
+{% endif %}
+
+<div class="card">
+  <form method="post">
+    <label>Propiedad de Google Analytics 4</label>
+    <select name="ga4_property">
+      <option value="">— ninguna —</option>
+      {% for p in properties %}
+        <option value="{{ p.property }}" {{ 'selected' if p.property == project.ga4_property }}>{{ p.display }}</option>
+      {% endfor %}
+    </select>
+    <div class="hint">De aquí sale la evolución de tráfico de los 12 meses (reemplaza SE Ranking).</div>
+
+    <label>Sitio de Search Console</label>
+    <select name="gsc_site">
+      <option value="">— ninguno —</option>
+      {% for s in sites %}
+        <option value="{{ s.site }}" {{ 'selected' if s.site == project.gsc_site }}>{{ s.site }} ({{ s.permission }})</option>
+      {% endfor %}
+    </select>
+    <div class="hint">De aquí salen las keywords reales, posiciones, clics e impresiones (reemplaza Sistrix).</div>
+
+    <label>Competidores (uno por línea, opcional)</label>
+    <textarea name="competitors" placeholder="canarypro.es&#10;soleracanarias.com&#10;reforcasa.net">{{ competitors }}</textarea>
+    <div class="hint">Para la sección de análisis de la competencia.</div>
+
+    <div style="margin-top:18px">
+      <button class="btn" type="submit">Guardar configuración</button>
+      <a class="btn ghost" href="{{ url_for('main.project_detail', pid=project.id) }}">Ir al proyecto</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

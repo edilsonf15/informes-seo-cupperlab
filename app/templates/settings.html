@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Ajustes{% endblock %}
+{% block body %}
+<h1>Ajustes</h1>
+<p class="lead">Conexiones adicionales de la app.</p>
+
+<div class="card">
+  <h3>Sistrix (índice de visibilidad de la competencia)</h3>
+  <p class="small">Es la única pieza que Google no da gratis. Con tu clave de Sistrix, la app saca
+     automáticamente el índice de visibilidad del beneficiario y de sus competidores.</p>
+  <ol class="steps" style="margin:10px 0 16px">
+    <li>Entra en <b>sistrix.com</b> con tu cuenta.</li>
+    <li>Arriba a la derecha: tu nombre → <b>Cuenta</b> → <b>Acceso API</b> (API).</li>
+    <li>Copia la <b>API key</b> y pégala aquí abajo.</li>
+  </ol>
+  <form method="post">
+    <label>Sistrix API key</label>
+    <input type="text" name="sistrix_api_key" placeholder="{{ masked or 'pega aquí tu clave' }}"
+           autocomplete="off">
+    {% if sistrix_set %}<div class="hint">Ya hay una clave guardada ({{ masked }}). Escribe una nueva solo si quieres cambiarla.</div>{% endif %}
+
+    <label>País del índice (código)</label>
+    <input type="text" name="sistrix_country" value="{{ country }}" style="max-width:120px">
+    <div class="hint">Para España: <code>es</code>. El índice de visibilidad depende del país.</div>
+
+    <div style="margin-top:16px">
+      <button class="btn" type="submit">Guardar</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

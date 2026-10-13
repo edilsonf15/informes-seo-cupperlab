@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Panel{% endblock %}
+{% block body %}
+<h1>Panel de proyectos</h1>
+<p class="lead">Cada proyecto es una web. Conecta Google una vez y genera la justificación anual con datos reales.</p>
+
+{% if not has_client_secret %}
+<div class="card" style="border-color:#f0dcb0;background:#fffaf0">
+  <h3>⚙️ Falta el paso inicial: conectar con Google Cloud</h3>
+  <p class="small">Para leer Analytics y Search Console necesitas subir una vez el archivo
+  <code>client_secret.json</code>. Está todo explicado en el <b>README.md</b> del proyecto
+  (sección "Alta en Google Cloud"). Guárdalo en <code>data/credentials/client_secret.json</code> y recarga.</p>
+</div>
+{% endif %}
+
+<div class="card">
+  <h3>Cuentas de Google conectadas</h3>
+  {% if accounts %}
+    <table>
+      <tr><th>Cuenta</th><th>Conectada</th><th></th></tr>
+      {% for a in accounts %}
+      <tr>
+        <td>{{ a.email }}</td>
+        <td class="small muted">{{ a.created_at }}</td>
+        <td class="right">
+          <form method="post" action="{{ url_for('main.delete_account', account_id=a.id) }}"
+                onsubmit="return confirm('¿Desconectar esta cuenta?')">
+            <button class="btn danger sm">Desconectar</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  {% else %}
+    <p class="empty">Aún no hay ninguna cuenta conectada.</p>
+  {% endif %}
+  <div style="margin-top:14px">
+    <a class="btn cian {{ 'ghost' if not has_client_secret }}" href="{{ url_for('main.connect') }}">+ Conectar cuenta de Google</a>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Proyectos (webs)</h3>
+  {% if projects %}
+    <table>
+      <tr><th>Web</th><th>Dominio</th><th>GA4</th><th>Search Console</th><th></th></tr>
+      {% for p in projects %}
+      <tr>
+        <td><a href="{{ url_for('main.project_detail', pid=p.id) }}"><b>{{ p.name }}</b></a></td>
+        <td class="small">{{ p.domain }}</td>
+        <td>{% if p.ga4_property %}<span class="tag ok">OK</span>{% else %}<span class="tag off">sin asignar</span>{% endif %}</td>
+        <td>{% if p.gsc_site %}<span class="tag ok">OK</span>{% else %}<span class="tag off">sin asignar</span>{% endif %}</td>
+        <td class="right"><a class="btn ghost sm" href="{{ url_for('main.project_detail', pid=p.id) }}">Abrir</a></td>
+      </tr>
+      {% endfor %}
+    </table>
+  {% else %}
+    <p class="empty">Todavía no hay proyectos. Crea el primero.</p>
+  {% endif %}
+  <div style="margin-top:14px">
+    <a class="btn" href="{{ url_for('main.new_project') }}">+ Nuevo proyecto</a>
+  </div>
+</div>
+{% endblock %}

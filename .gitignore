@@ -1,0 +1,9 @@
+# Datos sensibles y generados: NUNCA subir a internet
+data/app.db
+data/credentials/
+data/reports/
+*.pyc
+__pycache__/
+.venv/
+venv/
+.env

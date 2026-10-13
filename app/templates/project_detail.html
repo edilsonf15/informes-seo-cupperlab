@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}{{ project.name }}{% endblock %}
+{% block body %}
+<h1>{{ project.name }}</h1>
+<p class="lead">{{ project.domain }}</p>
+
+{% if not connected %}
+  <div class="card" style="border-color:#f0dcb0;background:#fffaf0">
+    <h3>Conecta las fuentes para ver el panel</h3>
+    <p class="small">Asigna la propiedad de Google Analytics y el sitio de Search Console para que
+       aparezcan aquí las métricas en vivo (sesiones, usuarios, clics, impresiones, posiciones y keywords).</p>
+    <a class="btn cian sm" href="{{ url_for('main.configure_project', pid=project.id) }}">Configurar fuentes</a>
+  </div>
+{% elif dash %}
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <h3 style="margin:0">Panel en vivo</h3>
+      <span class="small muted">últimos</span>
+      {% for m in [3,6,12,24] %}
+        <a class="btn ghost sm {{ 'cian' if m==months }}" href="?months={{ m }}">{{ m }}m</a>
+      {% endfor %}
+    </div>
+
+    {% if dash.gsc_totals %}
+    <h4 class="small muted" style="margin:10px 0 6px;text-transform:uppercase;letter-spacing:.4px">Visibilidad en Google (Search Console)</h4>
+    <div class="kgrid">
+      <div class="kc"><div class="n">{{ fmt(dash.buckets.total) }}</div><div class="l">Keywords</div></div>
+      <div class="kc"><div class="n">{{ fmt(dash.buckets.top3) }}</div><div class="l">Top 3</div></div>
+      <div class="kc"><div class="n">{{ fmt(dash.buckets.top10) }}</div><div class="l">Top 10</div></div>
+      <div class="kc"><div class="n">{{ fmt(dash.gsc_totals.clicks) }}</div><div class="l">Clics</div></div>
+      <div class="kc"><div class="n">{{ fmt(dash.gsc_totals.impressions) }}</div><div class="l">Impresiones</div></div>
+      <div class="kc"><div class="n">{{ dash.gsc_totals.position }}</div><div class="l">Posición media</div></div>
+    </div>
+    {% endif %}
+
+    {% if dash.ga4 %}
+    <h4 class="small muted" style="margin:16px 0 6px;text-transform:uppercase;letter-spacing:.4px">Tráfico (Google Analytics 4)</h4>
+    <div class="kgrid">
+      <div class="kc"><div class="n">{{ fmt(dash.ga4.totals.sessions) }}</div><div class="l">Sesiones</div></div>
+      <div class="kc"><div class="n">{{ fmt(dash.ga4.totals.users) }}</div><div class="l">Usuarios</div></div>
+      <div class="kc"><div class="n">{{ fmt(dash.ga4.totals.new_users) }}</div><div class="l">Nuevos</div></div>
+      <div class="kc"><div class="n">{{ fmt(dash.ga4.totals.pageviews) }}</div><div class="l">Vistas</div></div>
+    </div>
+    <div style="margin-top:12px">{{ bar_chart(dash.ga4.rows, 'sessions', color='#1cbce4')|safe }}</div>
+    {% endif %}
+
+    {% if dash.gsc_monthly %}
+    <h4 class="small muted" style="margin:16px 0 6px;text-transform:uppercase;letter-spacing:.4px">Clics en Google por mes</h4>
+    <div>{{ bar_chart(dash.gsc_monthly, 'clicks', color='#f46434')|safe }}</div>
+    {% endif %}
+
+    {% if dash.keywords %}
+    <h4 class="small muted" style="margin:16px 0 6px;text-transform:uppercase;letter-spacing:.4px">Top keywords y su posición</h4>
+    <table>
+      <tr><th>Keyword</th><th>Impresiones</th><th>Clics</th><th>Posición</th></tr>
+      {% for k in dash.keywords[:15] %}
+      <tr><td>{{ k.query }}</td><td class="small">{{ fmt(k.impressions) }}</td><td class="small">{{ fmt(k.clicks) }}</td><td class="small">{{ k.position }}</td></tr>
+      {% endfor %}
+    </table>
+    {% endif %}
+
+    {% if dash.warnings %}<p class="hint" style="margin-top:12px">⚠ {{ dash.warnings|join(' · ') }}</p>{% endif %}
+  </div>
+{% endif %}
+
+<div class="card">
+  <h3>Fuentes de datos</h3>
+  <table>
+    <tr><td>Cuenta de Google</td><td>{% if project.account_email %}{{ project.account_email }}{% else %}<span class="tag off">sin conectar</span>{% endif %}</td></tr>
+    <tr><td>Google Analytics 4</td><td>{% if project.ga4_property %}{{ project.ga4_name or project.ga4_property }}{% else %}<span class="tag off">sin asignar</span>{% endif %}</td></tr>
+    <tr><td>Search Console</td><td>{% if project.gsc_site %}{{ project.gsc_site }}{% else %}<span class="tag off">sin asignar</span>{% endif %}</td></tr>
+    <tr><td>Competidores</td><td>{% if competitors %}{{ competitors|join(', ') }}{% else %}<span class="muted">—</span>{% endif %}</td></tr>
+  </table>
+  <div style="margin-top:14px" class="row-actions">
+    <a class="btn ghost sm" href="{{ url_for('main.configure_project', pid=project.id) }}">Editar fuentes</a>
+    <form method="post" action="{{ url_for('main.delete_project', pid=project.id) }}"
+          onsubmit="return confirm('¿Eliminar este proyecto?')">
+      <button class="btn danger sm">Eliminar proyecto</button>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Generar informe de justificación</h3>
+  <form method="post" action="{{ url_for('main.generate', pid=project.id) }}">
+    <div class="grid cols2">
+      <div>
+        <label>Inicio del periodo</label>
+        <input type="date" name="start" required>
+      </div>
+      <div>
+        <label>Fin del periodo</label>
+        <input type="date" name="end" value="{{ today }}" required>
+      </div>
+    </div>
+    <label>Nombre del cliente (portada)</label>
+    <input type="text" name="client_name" value="{{ project.name }}">
+    <div class="grid cols2">
+      <div>
+        <label>Fase / título de la justificación</label>
+        <input type="text" name="fase" value="2ª FASE DE JUSTIFICACIÓN SITIO WEB Y PRESENCIA EN INTERNET">
+      </div>
+      <div>
+        <label>Fecha de elaboración</label>
+        <input type="date" name="fecha_elaboracion" value="{{ today }}">
+      </div>
+    </div>
+    <div style="margin-top:16px">
+      <button class="btn orange" type="submit">Generar informe PDF</button>
+      <span class="hint">Lee los datos reales de Google y rastrea la web. Puede tardar ~1 minuto.</span>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <h3>Informes generados</h3>
+  {% if reports %}
+    <table>
+      <tr><th>Archivo</th><th>Periodo</th><th>Fecha</th><th></th></tr>
+      {% for r in reports %}
+      <tr>
+        <td class="small">{{ r.filename }}</td>
+        <td class="small">{{ r.period_start }} → {{ r.period_end }}</td>
+        <td class="small muted">{{ r.created_at }}</td>
+        <td class="right"><a class="btn cian sm" href="{{ url_for('main.download_report', filename=r.filename) }}" target="_blank">Abrir PDF</a></td>
+      </tr>
+      {% endfor %}
+    </table>
+  {% else %}
+    <p class="empty">Todavía no has generado ningún informe para esta web.</p>
+  {% endif %}
+</div>
+{% endblock %}
