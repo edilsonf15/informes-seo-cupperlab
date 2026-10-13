@@ -1,5 +1,6 @@
 """Configuración central de la aplicación."""
 import os
+import secrets
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -21,9 +22,11 @@ SCOPES = [
 # Debe coincidir EXACTAMENTE con el "URI de redirección autorizado" en Google Cloud.
 REDIRECT_URI = os.environ.get("OAUTH_REDIRECT_URI", "http://localhost:5000/oauth2callback")
 
-SECRET_KEY = os.environ.get("FLASK_SECRET_KEY", "cupperlab-informe-seo-dev-key")
+# Clave de sesión: por entorno en producción; si no, se genera aleatoria (segura).
+SECRET_KEY = os.environ.get("FLASK_SECRET_KEY") or secrets.token_hex(32)
 
-# Contraseña para entrar a la app (cámbiala en producción con la variable de entorno).
+# Contraseña para entrar a la app. En producción se define con FLASK_APP_PASSWORD.
+# El valor por defecto es solo para uso local.
 APP_PASSWORD = os.environ.get("FLASK_APP_PASSWORD", "cupperlab")
 
 # Marca y textos por defecto del informe (se pueden cambiar al generar).
