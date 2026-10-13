@@ -47,8 +47,8 @@
   .note{background:#f3f7fa;border-left:3px solid #1cbce4;padding:8px 11px;margin:8px 0;font-size:10.5px;color:#334;border-radius:0 6px 6px 0}
   /* cover */
   .cover{height:94vh;display:flex;flex-direction:column;padding-top:8px}
-  .cover .top{height:5px;background:linear-gradient(90deg,#1cbce4,#0f9bc2);border-radius:3px}
-  .cover img{height:30px;margin:34px 0 0}
+  .cover .top{height:4px;width:70px;background:linear-gradient(90deg,#1cbce4,#f46434);border-radius:3px}
+  .cover img{height:22px;margin:26px 0 0;display:block}
   .cover .big{margin-top:70px}
   .cover .tag{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.2em;color:#0f9bc2;text-transform:uppercase}
   .cover h1{font-size:40px;margin:10px 0 0;color:#0e1319}
@@ -188,7 +188,16 @@
 
 <!-- 4. SEARCH CONSOLE -->
 <div class="section">
-  <div class="sechead"><span class="num">04</span><h2>Visibilidad en búsqueda</h2><span class="rule"></span></div>
+  <div class="sechead"><span class="num">04</span><h2>Visibilidad en búsqueda · Métricas clave del rendimiento</h2><span class="rule"></span></div>
+  {% if data.gsc_totals %}
+  {% set gs = data.gsc_totals %}
+  <div class="lkgrid">
+    <div class="lk"><div class="lkl">Clics</div><div class="lkn">{{ fmt(gs.clicks) }}</div><div class="lkd">Número de veces que los usuarios hicieron clic en un sitio web</div></div>
+    <div class="lk"><div class="lkl">Impresiones</div><div class="lkn">{{ fmt(gs.impressions) }}</div><div class="lkd">Número de veces que los usuarios vieron la URL de un sitio web en los resultados de búsqueda</div></div>
+    <div class="lk"><div class="lkl">CTR</div><div class="lkn">{{ gs.ctr }}%</div><div class="lkd">Porcentaje de impresiones que resultaron en un clic</div></div>
+    <div class="lk"><div class="lkl">Posición promedio</div><div class="lkn">{{ gs.position }}</div><div class="lkd">Posición promedio de un sitio web en los resultados de búsqueda</div></div>
+  </div>
+  {% endif %}
   {% if data.gsc_monthly %}
   <div class="card"><h3>Clics por mes</h3>{{ area_chart(data.gsc_monthly, 'clicks', color='#f46434', height=140)|safe }}</div>
   <div class="card"><h3>Impresiones por mes</h3>{{ area_chart(data.gsc_monthly, 'impressions', color='#0f9bc2', height=140)|safe }}</div>

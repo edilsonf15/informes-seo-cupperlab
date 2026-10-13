@@ -175,10 +175,14 @@ def project_detail(pid):
         except Exception as e:
             flash(f"No se pudo cargar el panel en vivo: {e}", "warn")
 
+    def _dmy(iso):
+        return date.fromisoformat(iso).strftime("%d/%m/%Y")
+
     return render_template("project_detail.html", project=project,
                            competitors=db.project_competitors(project),
                            reports=db.list_reports(pid), today=end,
                            dash=dash, connected=connected, months=months,
+                           period_ini=_dmy(start), period_fin=_dmy(end),
                            bar_chart=report.bar_chart, area_chart=report.area_chart,
                            donut=report.donut, fmt=report._fmt)
 

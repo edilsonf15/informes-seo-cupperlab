@@ -60,7 +60,13 @@
 
   {% if dash.ga4 %}
   {% set g = dash.ga4.totals %}
-  <span class="section-eyebrow">Resumen de la mejora del servicio · Analytics</span>
+  <div class="lkhead">
+    <div><h3 style="font-size:15px">Resumen de la mejora del servicio</h3><span class="small muted">Google Analytics</span></div>
+    <div style="text-align:right">
+      <div class="small" style="font-weight:600">{{ project.domain|replace('https://','')|replace('http://','')|replace('/','') }}</div>
+      <div class="small muted">Personalizado ({{ period_ini }} – {{ period_fin }})</div>
+    </div>
+  </div>
   <div class="lkgrid" style="margin-bottom:18px">
     <div class="lk"><div class="lkl">Sesiones</div><div class="lkn">{{ fmt(g.sessions) }}</div><div class="lkd">Número total de sesiones en el período seleccionado</div></div>
     <div class="lk"><div class="lkl">Sesiones con interacción</div><div class="lkn">{{ fmt(g.engaged_sessions) }}</div><div class="lkd">Sesiones de más de 10 segundos, con un evento de conversión o al menos 2 páginas vistas</div></div>
@@ -70,6 +76,23 @@
     <div class="lk"><div class="lkl">Conversiones</div><div class="lkn">{{ fmt(g.conversions) }}</div><div class="lkd">Número de veces que los usuarios activaron un evento de conversión</div></div>
     <div class="lk"><div class="lkl">Tiempo prom. de interacción</div><div class="lkn">{{ g.avg_engagement_fmt }}</div><div class="lkd">Duración promedio que el sitio web estuvo enfocado en el navegador</div></div>
     <div class="lk"><div class="lkl">Vistas</div><div class="lkn">{{ fmt(g.pageviews) }}</div><div class="lkd">Número total de páginas web que los usuarios visitaron en el período</div></div>
+  </div>
+  {% endif %}
+
+  {% if dash.gsc_totals %}
+  {% set gs = dash.gsc_totals %}
+  <div class="lkhead">
+    <div><h3 style="font-size:15px">Métricas clave del rendimiento de búsqueda</h3><span class="small muted">Search Console · Tipo de búsqueda: Web</span></div>
+    <div style="text-align:right">
+      <div class="small" style="font-weight:600">{{ project.domain|replace('https://','')|replace('http://','')|replace('/','') }}</div>
+      <div class="small muted">Personalizado ({{ period_ini }} – {{ period_fin }})</div>
+    </div>
+  </div>
+  <div class="lkgrid" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px">
+    <div class="lk"><div class="lkl">Clics</div><div class="lkn">{{ fmt(gs.clicks) }}</div><div class="lkd">Número de veces que los usuarios hicieron clic en un sitio web</div></div>
+    <div class="lk"><div class="lkl">Impresiones</div><div class="lkn">{{ fmt(gs.impressions) }}</div><div class="lkd">Número de veces que los usuarios vieron la URL de un sitio web en los resultados de búsqueda</div></div>
+    <div class="lk"><div class="lkl">CTR</div><div class="lkn">{{ gs.ctr }}%</div><div class="lkd">Porcentaje de impresiones que resultaron en un clic</div></div>
+    <div class="lk"><div class="lkl">Posición promedio</div><div class="lkn">{{ gs.position }}</div><div class="lkd">Posición promedio de un sitio web en los resultados de búsqueda</div></div>
   </div>
   {% endif %}
 

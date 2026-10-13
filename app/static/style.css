@@ -215,6 +215,8 @@ code{background:var(--ink-75);padding:2px 6px;border-radius:5px;font-size:12.5px
 .lkgrid .lkn{font-family:var(--font-display);font-size:26px;font-weight:800;color:var(--ink-900);margin:4px 0}
 .lkgrid .lkd{font-size:10px;color:var(--ink-400);line-height:1.4}
 @media(max-width:760px){.lkgrid{grid-template-columns:repeat(2,1fr)}}
+.lkhead{display:flex;align-items:flex-end;justify-content:space-between;margin:18px 0 8px;gap:12px}
+.lkhead h3{margin:0}
 
 /* ---------- Responsive ---------- */
 @media(max-width:860px){
