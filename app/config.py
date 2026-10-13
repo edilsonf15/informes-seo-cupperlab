@@ -37,8 +37,16 @@ for _d in (DATA_DIR, CRED_DIR, REPORTS_DIR):
     os.makedirs(_d, exist_ok=True)
 
 # En producción (Dokploy/servidor) es más cómodo pasar el client_secret como variable
-# de entorno en vez de subir el archivo. Si está la variable y no existe el archivo, se crea.
+# de entorno en vez de subir el archivo. Se admite texto plano (GOOGLE_CLIENT_SECRET_JSON)
+# o base64 (GOOGLE_CLIENT_SECRET_JSON_B64, recomendado: no rompe el editor de variables).
 _cs_env = os.environ.get("GOOGLE_CLIENT_SECRET_JSON")
+_cs_b64 = os.environ.get("GOOGLE_CLIENT_SECRET_JSON_B64")
+if _cs_b64 and not _cs_env:
+    try:
+        import base64
+        _cs_env = base64.b64decode(_cs_b64).decode("utf-8")
+    except Exception:
+        _cs_env = None
 if _cs_env and not os.path.exists(CLIENT_SECRET_FILE):
     try:
         with open(CLIENT_SECRET_FILE, "w", encoding="utf-8") as _f:
