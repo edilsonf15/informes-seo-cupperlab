@@ -7,20 +7,21 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <style>
     html,body{height:100%}
-    body{margin:0;background:var(--ink-950);color:var(--ink-900);overflow:hidden}
-    .auth{min-height:100vh;display:flex}
+    body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+      background:var(--ink-950);overflow:hidden;padding:24px;box-sizing:border-box}
 
-    /* ---- Lado izquierdo: isotipo + formulario ---- */
-    .auth-left{flex:1 1 54%;position:relative;display:flex;align-items:center;justify-content:center;
-      background:radial-gradient(1200px 700px at 30% -10%, #13202b 0%, var(--ink-950) 60%);
-      overflow:hidden;padding:40px 28px}
-    .auth-left .iso{position:absolute;right:-12%;top:50%;transform:translateY(-50%);
-      width:min(720px,92%);opacity:.08;pointer-events:none;user-select:none}
-    .auth-left .topglow{content:"";position:absolute;width:760px;height:760px;left:12%;top:-30%;
-      background:var(--glow-cyan);pointer-events:none;opacity:.6}
+    /* Vídeo de fondo a pantalla completa + capa oscura */
+    .bg-video{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
+    .bg-overlay{position:fixed;inset:0;z-index:-1;pointer-events:none;
+      background:radial-gradient(1100px 700px at 50% 40%,rgba(11,16,22,.62),rgba(11,16,22,.86))}
 
+    /* Isotipo (favicon) arriba a la izquierda */
+    .brandmark{position:fixed;top:20px;left:24px;z-index:3}
+    .brandmark img{height:46px;display:block}
+
+    /* Tarjeta de acceso centrada */
     .login{position:relative;z-index:2;width:400px;max-width:92vw;background:var(--white);
-      border-radius:22px;padding:40px 38px 30px;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+      border-radius:22px;padding:40px 38px 30px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
     .login .wm{text-align:center;margin-bottom:4px}
     .login .wm img{height:38px}
     .login .eyebrow{text-align:center;font-family:var(--font-mono);font-size:10px;letter-spacing:.24em;
@@ -35,54 +36,38 @@
     .login .foot{text-align:center;margin-top:22px;font-family:var(--font-mono);font-size:10px;
       letter-spacing:.14em;text-transform:uppercase;color:var(--ink-300)}
 
-    /* ---- Lado derecho: vídeo ---- */
-    .auth-right{flex:1 1 46%;position:relative;overflow:hidden}
-    .auth-right video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-    .auth-right .veil{position:absolute;inset:0;
-      background:linear-gradient(90deg,var(--ink-950) 0%,rgba(11,16,22,.35) 35%,rgba(11,16,22,.12) 100%)}
-
-    @media(max-width:860px){
-      body{overflow:auto}
-      .auth{flex-direction:column}
-      .auth-right{display:none}
-      .auth-left{flex:1;min-height:100vh}
-      .auth-left .iso{width:130%;right:-30%;opacity:.07}
-    }
+    @media(max-width:520px){ .brandmark img{height:38px} }
   </style>
 </head>
 <body>
-  <div class="auth">
-    <div class="auth-left">
-      <span class="topglow"></span>
-      <img class="iso" src="{{ url_for('static', filename='brand/cupperlab-isotipo.png') }}" alt="">
-      <form class="login" method="post">
-        <div class="wm"><img src="{{ url_for('static', filename='brand/cupperlab-wordmark.png') }}" alt="Cupperlab"></div>
-        <div class="eyebrow">Informes SEO</div>
-        <h2>Bienvenido</h2>
-        <div class="sub">Introduce tu usuario y contraseña para entrar.</div>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% for cat, msg in messages %}<div class="flash {{ cat }}" style="margin-bottom:12px">{{ msg }}</div>{% endfor %}
-        {% endwith %}
-        <label>Usuario</label>
-        <input type="text" name="username" autofocus required autocomplete="username" placeholder="tu usuario">
-        <label>Contraseña</label>
-        <input type="password" name="password" required autocomplete="current-password" placeholder="••••••••">
-        <button class="btn cyan" type="submit">Entrar</button>
-        <div class="foot">Mejoramos tu rentabilidad</div>
-        <div style="text-align:center;margin-top:10px;font-size:11px">
-          <a href="{{ url_for('main.privacy') }}" style="color:var(--ink-300)">Privacidad</a>
-          <span style="color:var(--ink-200)">·</span>
-          <a href="{{ url_for('main.terms') }}" style="color:var(--ink-300)">Términos</a>
-        </div>
-      </form>
+  <video class="bg-video" autoplay muted loop playsinline preload="auto"
+         poster="https://cupperlab.com/assets/img/diagnosticos-hero-graph.webp">
+    <source src="https://cupperlab.com/assets/video/diagnosticos-hero-graph.mp4" type="video/mp4">
+  </video>
+  <div class="bg-overlay"></div>
+  <a class="brandmark" href="https://cupperlab.com" target="_blank" rel="noopener">
+    <img src="{{ url_for('static', filename='brand/cupperlab-isotipo.png') }}" alt="Cupperlab">
+  </a>
+
+  <form class="login" method="post">
+    <div class="wm"><img src="{{ url_for('static', filename='brand/cupperlab-wordmark.png') }}" alt="Cupperlab"></div>
+    <div class="eyebrow">Informes SEO</div>
+    <h2>Bienvenido</h2>
+    <div class="sub">Introduce tu usuario y contraseña para entrar.</div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}<div class="flash {{ cat }}" style="margin-bottom:12px">{{ msg }}</div>{% endfor %}
+    {% endwith %}
+    <label>Usuario</label>
+    <input type="text" name="username" autofocus required autocomplete="username" placeholder="tu usuario">
+    <label>Contraseña</label>
+    <input type="password" name="password" required autocomplete="current-password" placeholder="••••••••">
+    <button class="btn cyan" type="submit">Entrar</button>
+    <div class="foot">Mejoramos tu rentabilidad</div>
+    <div style="text-align:center;margin-top:10px;font-size:11px">
+      <a href="{{ url_for('main.privacy') }}" style="color:var(--ink-300)">Privacidad</a>
+      <span style="color:var(--ink-200)">·</span>
+      <a href="{{ url_for('main.terms') }}" style="color:var(--ink-300)">Términos</a>
     </div>
-    <div class="auth-right">
-      <video autoplay muted loop playsinline preload="auto"
-             poster="https://cupperlab.com/assets/img/diagnosticos-hero-graph.webp">
-        <source src="https://cupperlab.com/assets/video/diagnosticos-hero-graph.mp4" type="video/mp4">
-      </video>
-      <div class="veil"></div>
-    </div>
-  </div>
+  </form>
 </body>
 </html>
