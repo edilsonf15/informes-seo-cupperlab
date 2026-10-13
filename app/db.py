@@ -225,3 +225,17 @@ def list_reports(project_id):
     ).fetchall()
     conn.close()
     return rows
+
+
+def get_report(report_id):
+    conn = get_db()
+    row = conn.execute("SELECT * FROM reports WHERE id=?", (report_id,)).fetchone()
+    conn.close()
+    return row
+
+
+def delete_report(report_id):
+    conn = get_db()
+    conn.execute("DELETE FROM reports WHERE id=?", (report_id,))
+    conn.commit()
+    conn.close()

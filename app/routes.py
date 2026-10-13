@@ -214,6 +214,47 @@ def audit_run(pid):
     return redirect(url_for("main.audit", pid=pid))
 
 
+# ---------------- Análisis (GA4 + Search Console con filtro de fechas) ----------------
+@bp.route("/projects/<int:pid>/analisis")
+def analisis(pid):
+    project = db.get_project(pid)
+    if not project:
+        abort(404)
+    today = date.today()
+
+    def _valid(iso):
+        try:
+            date.fromisoformat(iso)
+            return True
+        except (ValueError, TypeError):
+            return False
+
+    end = request.args.get("end")
+    start = request.args.get("start")
+    if not _valid(end):
+        end = today.isoformat()
+    if not _valid(start):
+        start = (today - timedelta(days=365)).isoformat()
+    site_name = (request.args.get("site") or "").strip() or \
+        project["domain"].replace("https://", "").replace("http://", "").rstrip("/")
+
+    dash = None
+    connected = bool(project["account_id"] and (project["ga4_property"] or project["gsc_site"]))
+    if connected:
+        try:
+            dash = service.dashboard_data(project, start, end)
+        except Exception as e:
+            flash(f"No se pudieron cargar los datos: {e}", "warn")
+
+    def _dmy(iso):
+        return date.fromisoformat(iso).strftime("%d/%m/%Y")
+
+    return render_template("analisis.html", project=project, dash=dash, connected=connected,
+                           start=start, end=end, site_name=site_name,
+                           period_ini=_dmy(start), period_fin=_dmy(end),
+                           area_chart=report.area_chart, donut=report.donut, fmt=report._fmt)
+
+
 # ---------------- Rank Tracker (Módulo 2) ----------------
 @bp.route("/projects/<int:pid>/posiciones")
 def ranktracker(pid):
@@ -277,6 +318,21 @@ def generate(pid):
             flash("Informe generado correctamente con datos reales.", "ok")
     except Exception as e:
         flash(f"Error al generar el informe: {e}", "error")
+    return redirect(url_for("main.project_detail", pid=pid))
+
+
+@bp.route("/projects/<int:pid>/reports/<int:rid>/delete", methods=["POST"])
+def delete_report(pid, rid):
+    row = db.get_report(rid)
+    if row:
+        try:
+            fpath = os.path.join(config.REPORTS_DIR, row["filename"])
+            if os.path.isfile(fpath):
+                os.remove(fpath)
+        except OSError:
+            pass
+        db.delete_report(rid)
+        flash("Informe eliminado.", "ok")
     return redirect(url_for("main.project_detail", pid=pid))
 
 

@@ -58,43 +58,9 @@
   </div>
   {% endif %}
 
-  {% if dash.ga4 %}
-  {% set g = dash.ga4.totals %}
-  <div class="lkhead">
-    <div><h3 style="font-size:15px">Resumen de la mejora del servicio</h3><span class="small muted">Google Analytics</span></div>
-    <div style="text-align:right">
-      <div class="small" style="font-weight:600">{{ project.domain|replace('https://','')|replace('http://','')|replace('/','') }}</div>
-      <div class="small muted">Personalizado ({{ period_ini }} – {{ period_fin }})</div>
-    </div>
+  <div style="margin:4px 0 18px">
+    <a class="btn cyan sm" href="{{ url_for('main.analisis', pid=project.id) }}">Ver análisis con fechas y tarjetas →</a>
   </div>
-  <div class="lkgrid" style="margin-bottom:18px">
-    <div class="lk"><div class="lkl">Sesiones</div><div class="lkn">{{ fmt(g.sessions) }}</div><div class="lkd">Número total de sesiones en el período seleccionado</div></div>
-    <div class="lk"><div class="lkl">Sesiones con interacción</div><div class="lkn">{{ fmt(g.engaged_sessions) }}</div><div class="lkd">Sesiones de más de 10 segundos, con un evento de conversión o al menos 2 páginas vistas</div></div>
-    <div class="lk"><div class="lkl">Usuarios</div><div class="lkn">{{ fmt(g.users) }}</div><div class="lkd">Número total de usuarios que iniciaron al menos una sesión en el período</div></div>
-    <div class="lk"><div class="lkl">Nuevos usuarios</div><div class="lkn">{{ g.new_users_pct }}%</div><div class="lkd">Nuevos usuarios únicos que iniciaron sesión por primera vez</div></div>
-    <div class="lk"><div class="lkl">Tasa de interacción</div><div class="lkn">{{ g.engagement_rate }}%</div><div class="lkd">Relación de sesiones interactivas con respecto al total de sesiones</div></div>
-    <div class="lk"><div class="lkl">Conversiones</div><div class="lkn">{{ fmt(g.conversions) }}</div><div class="lkd">Número de veces que los usuarios activaron un evento de conversión</div></div>
-    <div class="lk"><div class="lkl">Tiempo prom. de interacción</div><div class="lkn">{{ g.avg_engagement_fmt }}</div><div class="lkd">Duración promedio que el sitio web estuvo enfocado en el navegador</div></div>
-    <div class="lk"><div class="lkl">Vistas</div><div class="lkn">{{ fmt(g.pageviews) }}</div><div class="lkd">Número total de páginas web que los usuarios visitaron en el período</div></div>
-  </div>
-  {% endif %}
-
-  {% if dash.gsc_totals %}
-  {% set gs = dash.gsc_totals %}
-  <div class="lkhead">
-    <div><h3 style="font-size:15px">Métricas clave del rendimiento de búsqueda</h3><span class="small muted">Search Console · Tipo de búsqueda: Web</span></div>
-    <div style="text-align:right">
-      <div class="small" style="font-weight:600">{{ project.domain|replace('https://','')|replace('http://','')|replace('/','') }}</div>
-      <div class="small muted">Personalizado ({{ period_ini }} – {{ period_fin }})</div>
-    </div>
-  </div>
-  <div class="lkgrid" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px">
-    <div class="lk"><div class="lkl">Clics</div><div class="lkn">{{ fmt(gs.clicks) }}</div><div class="lkd">Número de veces que los usuarios hicieron clic en un sitio web</div></div>
-    <div class="lk"><div class="lkl">Impresiones</div><div class="lkn">{{ fmt(gs.impressions) }}</div><div class="lkd">Número de veces que los usuarios vieron la URL de un sitio web en los resultados de búsqueda</div></div>
-    <div class="lk"><div class="lkl">CTR</div><div class="lkn">{{ gs.ctr }}%</div><div class="lkd">Porcentaje de impresiones que resultaron en un clic</div></div>
-    <div class="lk"><div class="lkl">Posición promedio</div><div class="lkn">{{ gs.position }}</div><div class="lkd">Posición promedio de un sitio web en los resultados de búsqueda</div></div>
-  </div>
-  {% endif %}
 
   <div class="grid2">
     {% if dash.distribution %}
@@ -164,19 +130,13 @@
   <div class="card">
     <div class="card-head"><h3>Generar informe</h3></div>
     <form method="post" action="{{ url_for('main.generate', pid=project.id) }}">
-      <label>Tipo de informe</label>
-      <select name="report_type">
-        <option value="seo">Informe SEO completo (estilo SE Ranking)</option>
-        <option value="justificacion">Justificación de subvención (formato sobrio)</option>
-      </select>
+      <input type="hidden" name="report_type" value="seo">
       <div class="grid2">
         <div><label>Inicio del periodo</label><input type="date" name="start" required></div>
         <div><label>Fin del periodo</label><input type="date" name="end" value="{{ today }}" required></div>
       </div>
-      <label>Nombre del cliente (portada)</label>
-      <input type="text" name="client_name" value="{{ project.name }}">
       <div class="grid2">
-        <div><label>Fase / título (solo justificación)</label><input type="text" name="fase" value="2ª FASE DE JUSTIFICACIÓN SITIO WEB Y PRESENCIA EN INTERNET"></div>
+        <div><label>Nombre del cliente (portada)</label><input type="text" name="client_name" value="{{ project.name }}"></div>
         <div><label>Fecha de elaboración</label><input type="date" name="fecha_elaboracion" value="{{ today }}"></div>
       </div>
       <div class="row-actions" style="margin-top:18px">
@@ -202,7 +162,14 @@
             <td class="small"><b>{{ r.filename }}</b></td>
             <td class="small muted">{{ r.period_start }} → {{ r.period_end }}</td>
             <td class="small muted">{{ r.created_at }}</td>
-            <td style="text-align:right"><a class="btn cyan sm" href="{{ url_for('main.download_report', filename=r.filename) }}" target="_blank">Abrir PDF</a></td>
+            <td style="text-align:right">
+              <div class="row-actions" style="justify-content:flex-end">
+                <a class="btn cyan sm" href="{{ url_for('main.download_report', filename=r.filename) }}" target="_blank">Abrir PDF</a>
+                <form method="post" action="{{ url_for('main.delete_report', pid=project.id, rid=r.id) }}" onsubmit="return confirm('¿Eliminar este informe?')">
+                  <button class="btn danger sm" title="Eliminar informe">Eliminar</button>
+                </form>
+              </div>
+            </td>
           </tr>
         {% endfor %}
         </tbody>

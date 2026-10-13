@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% from "_tabs.html" import project_tabs %}
+{% block page_title %}{{ project.name }} · Análisis{% endblock %}
+{% block page_active %}panel{% endblock %}
+{% block topbar_title %}{{ project.name }}{% endblock %}
+{% block page_eyebrow %}{{ project.domain }}{% endblock %}
+{% block topbar_actions %}
+  <a class="btn outline sm" href="{{ url_for('main.project_detail', pid=project.id) }}">Volver al panel</a>
+{% endblock %}
+
+{% block body %}
+{{ project_tabs(project, 'analisis') }}
+
+{% if not connected %}
+  <div class="callout">
+    <h3>Conecta las fuentes para analizar</h3>
+    <p class="small">Asigna la propiedad de Google Analytics y el sitio de Search Console para ver aquí
+       las métricas reales del periodo que elijas.</p>
+    <div style="margin-top:10px"><a class="btn cyan sm" href="{{ url_for('main.configure_project', pid=project.id) }}">Configurar fuentes</a></div>
+  </div>
+{% else %}
+
+  {# ---- Filtro: fechas + nombre del sitio ---- #}
+  <form method="get" class="filterbar">
+    <div class="fld">
+      <label>Desde</label>
+      <input type="date" name="start" value="{{ start }}">
+    </div>
+    <div class="fld">
+      <label>Hasta</label>
+      <input type="date" name="end" value="{{ end }}">
+    </div>
+    <div class="fld grow">
+      <label>Nombre del sitio</label>
+      <input type="text" name="site" value="{{ site_name }}" placeholder="{{ project.domain }}">
+    </div>
+    <div class="fld">
+      <label>&nbsp;</label>
+      <button class="btn accent" type="submit">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+        Analizar
+      </button>
+    </div>
+  </form>
+  <p class="hint" style="margin:2px 0 6px">El nombre del sitio sale automático; cámbialo arriba si lo necesitas distinto en el análisis.</p>
+
+  {% if dash and dash.ga4 %}
+  {% set g = dash.ga4.totals %}
+  <div class="lkhead">
+    <h3>Resumen de la mejora del servicio</h3>
+    <div style="text-align:right">
+      <div class="small" style="font-weight:700">{{ site_name }}</div>
+      <div class="small muted">Personalizado ({{ period_ini }} – {{ period_fin }})</div>
+    </div>
+  </div>
+  <div class="lkgrid">
+    <div class="lk"><div class="lkl">Sesiones</div><div class="lkn">{{ fmt(g.sessions) }}</div><div class="lkd">Número total de sesiones en el período seleccionado</div></div>
+    <div class="lk"><div class="lkl">Sesiones con interacción</div><div class="lkn">{{ fmt(g.engaged_sessions) }}</div><div class="lkd">Sesiones de más de 10 segundos, con un evento de conversión o al menos 2 páginas vistas</div></div>
+    <div class="lk"><div class="lkl">Usuarios</div><div class="lkn">{{ fmt(g.users) }}</div><div class="lkd">Número total de usuarios que iniciaron al menos una sesión en el período</div></div>
+    <div class="lk"><div class="lkl">Nuevos usuarios</div><div class="lkn">{{ g.new_users_pct }}%</div><div class="lkd">Nuevos usuarios únicos que iniciaron sesión por primera vez</div></div>
+    <div class="lk"><div class="lkl">Tasa de interacción</div><div class="lkn">{{ g.engagement_rate }}%</div><div class="lkd">Relación de sesiones interactivas con respecto al total de sesiones</div></div>
+    <div class="lk"><div class="lkl">Conversiones</div><div class="lkn">{{ fmt(g.conversions) }}</div><div class="lkd">Número de veces que los usuarios activaron un evento de conversión</div></div>
+    <div class="lk"><div class="lkl">Tiempo prom. de interacción</div><div class="lkn">{{ g.avg_engagement_fmt }}</div><div class="lkd">Duración promedio que el sitio web estuvo enfocado en el navegador</div></div>
+    <div class="lk"><div class="lkl">Vistas</div><div class="lkn">{{ fmt(g.pageviews) }}</div><div class="lkd">Número total de páginas web que los usuarios visitaron en el período</div></div>
+  </div>
+  {% endif %}
+
+  {% if dash and dash.gsc_totals %}
+  {% set gs = dash.gsc_totals %}
+  <div class="lkhead">
+    <h3>Métricas clave del rendimiento de búsqueda</h3>
+    <div style="text-align:right">
+      <div class="small" style="font-weight:700">{{ site_name }}</div>
+      <div class="small muted">Personalizado ({{ period_ini }} – {{ period_fin }})</div>
+    </div>
+  </div>
+  <div class="lkgrid">
+    <div class="lk"><div class="lkl">Clics</div><div class="lkn">{{ fmt(gs.clicks) }}</div><div class="lkd">Número de veces que los usuarios hicieron clic en un sitio web</div></div>
+    <div class="lk"><div class="lkl">Impresiones</div><div class="lkn">{{ fmt(gs.impressions) }}</div><div class="lkd">Número de veces que los usuarios vieron la URL de un sitio web en los resultados de búsqueda</div></div>
+    <div class="lk"><div class="lkl">CTR</div><div class="lkn">{{ gs.ctr }}%</div><div class="lkd">Porcentaje de impresiones que resultaron en un clic</div></div>
+    <div class="lk"><div class="lkl">Posición promedio</div><div class="lkn">{{ gs.position }}</div><div class="lkd">Posición promedio de un sitio web en los resultados de búsqueda</div></div>
+  </div>
+  {% endif %}
+
+  {% if dash and (dash.distribution or dash.gsc_monthly) %}
+  <div class="grid2" style="margin-top:22px">
+    {% if dash.distribution %}
+    <div class="card">
+      <div class="card-head"><h3>Distribución de posiciones</h3></div>
+      <div style="display:flex;gap:22px;align-items:center">
+        <div>{{ donut(dash.distribution)|safe }}</div>
+        <div style="flex:1">
+          {% for s in dash.distribution %}
+          <div style="display:flex;align-items:center;gap:8px;margin:6px 0;font-size:13px">
+            <span style="width:10px;height:10px;border-radius:3px;background:{{ s.color }}"></span>{{ s.label }}
+            <span style="margin-left:auto;font-weight:700;font-family:var(--font-mono)">{{ fmt(s.value) }}</span></div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    {% if dash.gsc_monthly %}
+    <div class="card">
+      <div class="card-head"><h3>Impresiones por mes</h3></div>
+      {{ area_chart(dash.gsc_monthly,'impressions',color='#0f9bc2',height=150)|safe }}
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if dash and dash.keywords %}
+  <div class="card" style="margin-top:22px">
+    <div class="card-head"><h3>Top keywords</h3><div class="sp"></div>
+      <a class="btn outline sm" href="{{ url_for('main.ranktracker', pid=project.id) }}">Ver todas →</a></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Keyword</th><th>Posición</th><th>Impresiones</th><th>Clics</th><th>CTR</th></tr></thead>
+        <tbody>
+        {% for k in dash.keywords[:15] %}
+          <tr><td><b>{{ k.query }}</b></td><td>{{ k.position }}</td><td>{{ fmt(k.impressions) }}</td><td>{{ fmt(k.clicks) }}</td><td>{{ k.ctr }}%</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if dash and dash.warnings %}<p class="hint" style="margin-top:8px">⚠ {{ dash.warnings|join(' · ') }}</p>{% endif %}
+  {% if not dash %}<div class="empty" style="margin-top:14px"><div>No hay datos para el periodo elegido.</div></div>{% endif %}
+{% endif %}
+{% endblock %}
