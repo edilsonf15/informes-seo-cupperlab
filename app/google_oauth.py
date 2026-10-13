@@ -35,12 +35,15 @@ def authorization_url():
         include_granted_scopes="true",
         prompt="consent",            # fuerza refresh_token también en reconexiones
     )
-    return url, state
+    # PKCE: hay que conservar el code_verifier para el callback.
+    return url, state, flow.code_verifier
 
 
-def finish_and_store(state, authorization_response_url):
+def finish_and_store(state, authorization_response_url, code_verifier=None):
     """Intercambia el código por un token, averigua el email y lo guarda."""
     flow = build_flow(state=state)
+    if code_verifier:
+        flow.code_verifier = code_verifier
     flow.fetch_token(authorization_response=authorization_response_url)
     creds = flow.credentials
     email = _fetch_email(creds)

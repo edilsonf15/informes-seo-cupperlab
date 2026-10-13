@@ -70,16 +70,18 @@ def connect():
     if not config.client_secret_exists():
         flash("Primero sube el archivo client_secret.json de Google Cloud (ver guía).", "error")
         return redirect(url_for("main.dashboard"))
-    url, state = google_oauth.authorization_url()
+    url, state, code_verifier = google_oauth.authorization_url()
     session["oauth_state"] = state
+    session["code_verifier"] = code_verifier
     return redirect(url)
 
 
 @bp.route("/oauth2callback")
 def oauth2callback():
     state = session.get("oauth_state")
+    code_verifier = session.get("code_verifier")
     try:
-        _, email = google_oauth.finish_and_store(state, request.url)
+        _, email = google_oauth.finish_and_store(state, request.url, code_verifier)
         flash(f"Cuenta de Google conectada: {email}", "ok")
     except Exception as e:
         flash(f"No se pudo conectar la cuenta: {e}", "error")
