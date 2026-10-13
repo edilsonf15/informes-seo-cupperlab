@@ -8,8 +8,9 @@
   <style>
     body{min-height:100vh;display:flex;align-items:center;justify-content:center;
       background:var(--ink-950);position:relative;overflow:hidden}
-    body::before{content:"";position:absolute;width:900px;height:900px;left:50%;top:-20%;
-      transform:translateX(-50%);background:var(--glow-cyan);pointer-events:none}
+    .bg-video{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
+    .bg-overlay{position:fixed;inset:0;z-index:-1;pointer-events:none;
+      background:linear-gradient(180deg,rgba(11,16,22,.74),rgba(11,16,22,.86))}
     .login{position:relative;z-index:1;width:380px;max-width:92vw;background:var(--white);
       border-radius:var(--r-xl);padding:38px 34px 32px;box-shadow:var(--sh-lg)}
     .login .wm{text-align:center;margin-bottom:6px}
@@ -24,6 +25,11 @@
   </style>
 </head>
 <body>
+  <video class="bg-video" autoplay muted loop playsinline preload="auto"
+         poster="https://cupperlab.com/assets/img/diagnosticos-hero-graph.webp">
+    <source src="https://cupperlab.com/assets/video/diagnosticos-hero-graph.mp4" type="video/mp4">
+  </video>
+  <div class="bg-overlay"></div>
   <form class="login" method="post">
     <div class="wm"><img src="{{ url_for('static', filename='brand/cupperlab-wordmark.png') }}" alt="Cupperlab"></div>
     <div class="eyebrow">Informes SEO</div>
