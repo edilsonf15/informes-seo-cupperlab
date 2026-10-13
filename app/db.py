@@ -2,6 +2,7 @@
 import sqlite3
 import json
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
 from . import config
 
 SCHEMA = """
@@ -35,6 +36,12 @@ CREATE TABLE IF NOT EXISTS reports (
 CREATE TABLE IF NOT EXISTS settings (
     key   TEXT PRIMARY KEY,
     value TEXT
+);
+CREATE TABLE IF NOT EXISTS users (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    username   TEXT UNIQUE NOT NULL,
+    pass_hash  TEXT NOT NULL,
+    created_at TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS audits (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -100,6 +107,75 @@ def get_db():
 def init_db():
     conn = get_db()
     conn.executescript(SCHEMA)
+    conn.commit()
+    # Usuario inicial: si no hay ninguno, se crea uno por defecto con la
+    # contraseña de FLASK_APP_PASSWORD para no perder el acceso.
+    n = conn.execute("SELECT COUNT(*) c FROM users").fetchone()["c"]
+    if n == 0:
+        conn.execute(
+            "INSERT INTO users (username, pass_hash, created_at) VALUES (?,?,?)",
+            ("cupperlab", generate_password_hash(config.APP_PASSWORD), _now()),
+        )
+        conn.commit()
+    conn.close()
+
+
+# ---------------- Usuarios ----------------
+def verify_user(username, password):
+    """Devuelve el username si usuario+contraseña son correctos, si no None."""
+    conn = get_db()
+    row = conn.execute("SELECT * FROM users WHERE username=?", (username.strip(),)).fetchone()
+    conn.close()
+    if row and check_password_hash(row["pass_hash"], password):
+        return row["username"]
+    return None
+
+
+def list_users():
+    conn = get_db()
+    rows = conn.execute("SELECT id, username, created_at FROM users ORDER BY username").fetchall()
+    conn.close()
+    return rows
+
+
+def count_users():
+    conn = get_db()
+    n = conn.execute("SELECT COUNT(*) c FROM users").fetchone()["c"]
+    conn.close()
+    return n
+
+
+def create_user(username, password):
+    """Crea un usuario. Lanza ValueError si el nombre ya existe o falta algo."""
+    username = (username or "").strip()
+    if not username or not password:
+        raise ValueError("Usuario y contraseña son obligatorios.")
+    conn = get_db()
+    try:
+        conn.execute(
+            "INSERT INTO users (username, pass_hash, created_at) VALUES (?,?,?)",
+            (username, generate_password_hash(password), _now()),
+        )
+        conn.commit()
+    except sqlite3.IntegrityError:
+        conn.close()
+        raise ValueError(f"El usuario «{username}» ya existe.")
+    conn.close()
+
+
+def set_user_password(user_id, password):
+    if not password:
+        raise ValueError("La contraseña no puede estar vacía.")
+    conn = get_db()
+    conn.execute("UPDATE users SET pass_hash=? WHERE id=?",
+                 (generate_password_hash(password), user_id))
+    conn.commit()
+    conn.close()
+
+
+def delete_user(user_id):
+    conn = get_db()
+    conn.execute("DELETE FROM users WHERE id=?", (user_id,))
     conn.commit()
     conn.close()
 

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block page_title %}Usuarios{% endblock %}
+{% block page_active %}usuarios{% endblock %}
+{% block topbar_title %}Usuarios{% endblock %}
+{% block page_eyebrow %}Cupperlab · SEO{% endblock %}
+{% block body %}
+<p class="lead">Quién puede entrar a la aplicación. Cada persona entra con su usuario y contraseña.</p>
+
+<div class="grid2">
+  <div class="card">
+    <div class="card-head"><h3>Usuarios con acceso</h3></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Usuario</th><th>Creado</th><th></th></tr></thead>
+        <tbody>
+        {% for u in users %}
+          <tr>
+            <td><b>{{ u.username }}</b>{% if u.username == current %} <span class="pill ok">tú</span>{% endif %}</td>
+            <td class="small muted">{{ u.created_at[:10] }}</td>
+            <td style="text-align:right">
+              <form method="post" action="{{ url_for('main.delete_user', user_id=u.id) }}" onsubmit="return confirm('¿Eliminar al usuario {{ u.username }}?')">
+                <button class="btn danger sm" {% if users|length <= 1 %}disabled title="No puedes eliminar el único usuario"{% endif %}>Eliminar</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3>Crear usuario nuevo</h3></div>
+    <form method="post">
+      <input type="hidden" name="action" value="create">
+      <label>Usuario</label>
+      <input type="text" name="username" placeholder="ej. victor" autocomplete="off" required>
+      <label>Contraseña</label>
+      <input type="text" name="password" placeholder="contraseña para esa persona" autocomplete="off" required>
+      <div class="hint">Comparte este usuario y contraseña con la persona. Podrá entrar en {{ request.host_url }}.</div>
+      <div class="row-actions" style="margin-top:18px"><button class="btn cyan" type="submit">Crear usuario</button></div>
+    </form>
+
+    <div style="border-top:1px solid var(--ink-100);margin:22px 0 0;padding-top:18px">
+      <h3 style="font-size:15px;margin-bottom:10px">Cambiar una contraseña</h3>
+      <form method="post">
+        <input type="hidden" name="action" value="password">
+        <label>Usuario</label>
+        <select name="user_id">
+          {% for u in users %}<option value="{{ u.id }}">{{ u.username }}</option>{% endfor %}
+        </select>
+        <label>Nueva contraseña</label>
+        <input type="text" name="password" placeholder="nueva contraseña" autocomplete="off" required>
+        <div class="row-actions" style="margin-top:16px"><button class="btn outline" type="submit">Actualizar contraseña</button></div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

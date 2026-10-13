@@ -50,17 +50,52 @@ def terms():
 @bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        if request.form.get("password") == config.APP_PASSWORD:
+        username = request.form.get("username", "")
+        password = request.form.get("password", "")
+        user = db.verify_user(username, password)
+        if user:
             session["auth"] = True
+            session["user"] = user
+            session["last_active"] = int(time.time())
             return redirect(url_for("main.dashboard"))
-        flash("Contraseña incorrecta.", "error")
+        flash("Usuario o contraseña incorrectos.", "error")
     return render_template("login.html")
 
 
 @bp.route("/logout")
 def logout():
-    session.pop("auth", None)
+    session.clear()
     return redirect(url_for("main.login"))
+
+
+# ---------------- Usuarios ----------------
+@bp.route("/usuarios", methods=["GET", "POST"])
+def users():
+    if request.method == "POST":
+        action = request.form.get("action", "create")
+        try:
+            if action == "create":
+                db.create_user(request.form.get("username"), request.form.get("password"))
+                flash("Usuario creado.", "ok")
+            elif action == "password":
+                db.set_user_password(int(request.form["user_id"]), request.form.get("password"))
+                flash("Contraseña actualizada.", "ok")
+        except ValueError as e:
+            flash(str(e), "error")
+        except (KeyError, ValueError):
+            flash("Datos no válidos.", "error")
+        return redirect(url_for("main.users"))
+    return render_template("users.html", users=db.list_users(), current=session.get("user"))
+
+
+@bp.route("/usuarios/<int:user_id>/delete", methods=["POST"])
+def delete_user(user_id):
+    if db.count_users() <= 1:
+        flash("No puedes eliminar el único usuario que queda.", "error")
+    else:
+        db.delete_user(user_id)
+        flash("Usuario eliminado.", "ok")
+    return redirect(url_for("main.users"))
 
 
 # ---------------- Ajustes ----------------
