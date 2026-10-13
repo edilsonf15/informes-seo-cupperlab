@@ -48,7 +48,7 @@
   /* cover */
   .cover{height:94vh;display:flex;flex-direction:column;padding-top:8px}
   .cover .top{height:4px;width:70px;background:linear-gradient(90deg,#1cbce4,#f46434);border-radius:3px}
-  .cover img{height:22px;margin:26px 0 0;display:block}
+  .cover img{height:26px;width:auto;align-self:flex-start;margin:26px 0 0;display:block}
   .cover .big{margin-top:70px}
   .cover .tag{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.2em;color:#0f9bc2;text-transform:uppercase}
   .cover h1{font-size:40px;margin:10px 0 0;color:#0e1319}
@@ -63,10 +63,10 @@
 <body>
 
 {% macro trend(v, unit='%') %}
-  {% if v is none %}<span class="teq">—</span>
-  {% elif v > 0 %}<span class="tup">▲ {{ v }}{{ unit }}</span>
-  {% elif v < 0 %}<span class="tdn">▼ {{ (-v) }}{{ unit }}</span>
-  {% else %}<span class="teq">0{{ unit }}</span>{% endif %}
+  {%- if v is number and v > 0 %}<span class="tup">▲ {{ v }}{{ unit }}</span>
+  {%- elif v is number and v < 0 %}<span class="tdn">▼ {{ (-v) }}{{ unit }}</span>
+  {%- elif v is number %}<span class="teq">0{{ unit }}</span>
+  {%- else %}<span class="teq">—</span>{% endif %}
 {% endmacro %}
 
 <!-- COVER -->

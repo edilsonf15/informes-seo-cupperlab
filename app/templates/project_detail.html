@@ -13,10 +13,10 @@
 {% endblock %}
 
 {% macro tr(v, unit='%') %}
-  {%- if v is none %}<span class="muted">—</span>
-  {%- elif v > 0 %}<span class="delta-up">▲ {{ v }}{{ unit }}</span>
-  {%- elif v < 0 %}<span class="delta-down">▼ {{ (-v) }}{{ unit }}</span>
-  {%- else %}<span class="muted">0{{ unit }}</span>{% endif %}
+  {%- if v is number and v > 0 %}<span class="delta-up">▲ {{ v }}{{ unit }}</span>
+  {%- elif v is number and v < 0 %}<span class="delta-down">▼ {{ (-v) }}{{ unit }}</span>
+  {%- elif v is number %}<span class="muted">0{{ unit }}</span>
+  {%- else %}<span class="muted">—</span>{% endif %}
 {% endmacro %}
 
 {% block body %}
