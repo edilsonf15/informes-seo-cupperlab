@@ -2,6 +2,7 @@
 import os
 import re
 import json
+import time
 from datetime import date, timedelta
 from flask import (Blueprint, render_template, request, redirect, url_for,
                    session, flash, send_from_directory, abort)
@@ -9,6 +10,9 @@ from flask import (Blueprint, render_template, request, redirect, url_for,
 from . import config, db, google_oauth, ga4, gsc, service, report, crawler
 
 bp = Blueprint("main", __name__)
+
+# La sesión se cierra tras 1 hora sin actividad (inactividad).
+IDLE_TIMEOUT = 3600  # segundos
 
 
 def _slug(text):
@@ -23,6 +27,14 @@ def _require_login():
         return
     if not session.get("auth"):
         return redirect(url_for("main.login"))
+    # Cierre por inactividad: si pasó más de 1 hora desde la última acción, fuera.
+    now = int(time.time())
+    last = session.get("last_active")
+    if last and (now - last) > IDLE_TIMEOUT:
+        session.clear()
+        flash("Tu sesión se cerró tras 1 hora de inactividad. Vuelve a entrar.", "warn")
+        return redirect(url_for("main.login"))
+    session["last_active"] = now
 
 
 @bp.route("/privacidad")
