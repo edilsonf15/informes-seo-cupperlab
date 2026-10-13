@@ -7,8 +7,13 @@
   *{box-sizing:border-box}
   body{font-family:"Plus Jakarta Sans",Arial,sans-serif;color:#283038;font-size:12px;line-height:1.5;margin:0;background:#fff}
   h1,h2,h3,h4{font-family:"Sora","Plus Jakarta Sans",Arial,sans-serif;color:#0e1319;margin:0;letter-spacing:-.01em}
-  .section{break-before:page;padding-top:8px}
-  .section:first-of-type{break-before:auto}
+  .section{padding-top:4px;margin-bottom:22px}
+  .sechead{break-after:avoid}
+  .wrow,.wgt,.donutwrap{break-inside:avoid}
+  .card{break-inside:avoid}
+  .card.flow{break-inside:auto}
+  table.t thead{display:table-header-group}
+  .cover{break-after:page}
   .sechead{display:flex;align-items:center;gap:10px;margin:0 0 14px}
   .sechead .num{font-family:"JetBrains Mono",monospace;font-size:11px;color:#1cbce4;font-weight:700}
   .sechead h2{font-size:18px;color:#12324a}
@@ -132,13 +137,13 @@
       </div>
     </div>
   </div>
-  <div class="card">
+  <div class="card flow">
     <h3>Keywords y su posición</h3>
     <table class="t">
       <tr><th>#</th><th>Keyword</th><th>Posición</th><th>Cambio</th><th>Impresiones</th><th>Clics</th><th>CTR</th></tr>
       {% for k in data.rank.rows[:40] %}
       <tr>
-        <td>{{ loop.index }}</td><td><b>{{ k.query }}</b></td><td>{{ k.position }}</td>
+        <td>{{ loop.index }}</td><td><b>{{ k.query }}</b></td><td>{{ k.position|round(1) }}</td>
         <td>{% if k.delta is none %}<span class="badge b-new">nuevo</span>{% elif k.delta>0 %}<span class="badge b-up">▲ {{ k.delta }}</span>{% elif k.delta<0 %}<span class="badge b-dn">▼ {{ (-k.delta) }}</span>{% else %}<span class="badge b-new">=</span>{% endif %}</td>
         <td>{{ fmt(k.impressions) }}</td><td>{{ fmt(k.clicks) }}</td><td>{{ k.ctr }}%</td>
       </tr>
@@ -156,7 +161,7 @@
     <h3>Sesiones por mes</h3>
     {{ area_chart(data.ga4.rows, 'sessions', color='#1cbce4', height=150)|safe }}
   </div>
-  <div class="card">
+  <div class="card flow">
     <table class="t">
       <tr><th>Mes</th><th>Sesiones</th><th>Usuarios</th><th>Nuevos</th><th>Vistas</th></tr>
       {% for r in data.ga4.rows %}<tr><td>{{ r.month }}</td><td>{{ fmt(r.sessions) }}</td><td>{{ fmt(r.users) }}</td><td>{{ fmt(r.new_users) }}</td><td>{{ fmt(r.pageviews) }}</td></tr>{% endfor %}
@@ -171,7 +176,7 @@
   {% if data.gsc_monthly %}
   <div class="card"><h3>Clics por mes</h3>{{ area_chart(data.gsc_monthly, 'clicks', color='#f46434', height=140)|safe }}</div>
   <div class="card"><h3>Impresiones por mes</h3>{{ area_chart(data.gsc_monthly, 'impressions', color='#0f9bc2', height=140)|safe }}</div>
-  <div class="card">
+  <div class="card flow">
     <table class="t">
       <tr><th>Mes</th><th>Clics</th><th>Impresiones</th><th>Posición media</th></tr>
       {% for r in data.gsc_monthly %}<tr><td>{{ r.month }}</td><td>{{ fmt(r.clicks) }}</td><td>{{ fmt(r.impressions) }}</td><td>{{ r.position }}</td></tr>{% endfor %}
