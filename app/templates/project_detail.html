@@ -81,7 +81,7 @@
     {% if dash.gsc_monthly %}
     <div class="card">
       <div class="card-head"><h3>Impresiones por mes</h3></div>
-      {{ area_chart(dash.gsc_monthly,'impressions',color='#0f9bc2',height=150)|safe }}
+      {{ monthly_bars(dash.gsc_monthly,'impressions',start=start,end=end,color='#1cbce4',height=180)|safe }}
     </div>
     {% endif %}
   </div>

@@ -1,9 +1,22 @@
 """Renderizado del informe: HTML (Jinja) -> PDF (Playwright/Chromium)."""
 import os
 import base64
+import calendar
+from datetime import date
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from playwright.sync_api import sync_playwright
 from . import config
+
+_MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
+
+
+def _month_label(ym):
+    """'2026-09' -> 'sep 26'."""
+    try:
+        y, m = ym.split("-")[:2]
+        return f"{_MESES[int(m) - 1]} {y[2:]}"
+    except Exception:
+        return str(ym)
 
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "templates")
 _LOGO_PATH = os.path.join(os.path.dirname(__file__), "static", "brand", "cupperlab-wordmark.png")
@@ -65,6 +78,61 @@ def _fmt(v):
     except Exception:
         return str(v)
     return f"{v:,}".replace(",", ".")
+
+
+def monthly_bars(series, value_key, start=None, end=None, color="#1cbce4", height=170):
+    """Barras por mes con etiqueta (sep 26), valor encima y mes incompleto atenuado.
+
+    Un mes se marca 'parcial' (atenuado) si el rango no lo cubre entero, para que
+    un último mes a medias no parezca una caída real de impresiones/clics.
+    """
+    rows = list(series or [])
+    if not rows:
+        return '<div class="small muted" style="padding:18px 2px">Sin datos en el periodo elegido.</div>'
+
+    partial = set()
+    try:
+        if start:
+            sd = date.fromisoformat(start)
+            if sd.day > 1:
+                partial.add(f"{sd.year:04d}-{sd.month:02d}")
+        if end:
+            ed = date.fromisoformat(end)
+            if ed.day < calendar.monthrange(ed.year, ed.month)[1]:
+                partial.add(f"{ed.year:04d}-{ed.month:02d}")
+    except (ValueError, TypeError):
+        pass
+
+    keys = [str(r.get("month", "")) for r in rows]
+    values = [max(0, (r.get(value_key) or 0)) for r in rows]
+    vmax = max(values) or 1
+    n = len(values)
+    bw = 56 if n <= 8 else (36 if n <= 14 else 24)
+    gap = max(10, bw // 3)
+    width = n * bw + (n + 1) * gap
+    has_partial = bool(partial & set(keys))
+    plot_h = height - (46 if has_partial else 38)
+
+    bars = []
+    for i, (v, k) in enumerate(zip(values, keys)):
+        bh = int(plot_h * v / vmax)
+        x = gap + i * (bw + gap)
+        y = plot_h - bh + 10
+        is_p = k in partial
+        op = "0.38" if is_p else "1"
+        bars.append(
+            f'<rect x="{x}" y="{y}" width="{bw}" height="{max(bh,2)}" rx="4" fill="{color}" opacity="{op}"/>'
+            f'<text x="{x + bw/2:.0f}" y="{y - 6}" text-anchor="middle" font-size="11" font-weight="700" '
+            f'fill="#11151c" font-family="JetBrains Mono,monospace">{_fmt(v)}</text>'
+            f'<text x="{x + bw/2:.0f}" y="{plot_h + 24}" text-anchor="middle" font-size="10" '
+            f'fill="#58626f" font-family="Plus Jakarta Sans,sans-serif">{_month_label(k)}</text>'
+            + (f'<text x="{x + bw/2:.0f}" y="{plot_h + 37}" text-anchor="middle" font-size="8" '
+               f'fill="#a3adba" font-family="Plus Jakarta Sans,sans-serif">parcial</text>' if is_p else "")
+        )
+    return (
+        f'<svg viewBox="0 0 {width} {height}" width="100%" preserveAspectRatio="xMidYMid meet" '
+        f'xmlns="http://www.w3.org/2000/svg" style="max-width:{max(width, 320)}px">{"".join(bars)}</svg>'
+    )
 
 
 def area_chart(series, value_key, color="#1cbce4", label_key="month", height=120):

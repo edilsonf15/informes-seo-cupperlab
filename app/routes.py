@@ -182,9 +182,10 @@ def project_detail(pid):
                            competitors=db.project_competitors(project),
                            reports=db.list_reports(pid), today=end,
                            dash=dash, connected=connected, months=months,
+                           start=start, end=end,
                            period_ini=_dmy(start), period_fin=_dmy(end),
                            bar_chart=report.bar_chart, area_chart=report.area_chart,
-                           donut=report.donut, fmt=report._fmt)
+                           donut=report.donut, monthly_bars=report.monthly_bars, fmt=report._fmt)
 
 
 # ---------------- Site Audit (Módulo 1) ----------------
@@ -252,7 +253,8 @@ def analisis(pid):
     return render_template("analisis.html", project=project, dash=dash, connected=connected,
                            start=start, end=end, site_name=site_name,
                            period_ini=_dmy(start), period_fin=_dmy(end),
-                           area_chart=report.area_chart, donut=report.donut, fmt=report._fmt)
+                           area_chart=report.area_chart, donut=report.donut,
+                           monthly_bars=report.monthly_bars, fmt=report._fmt)
 
 
 # ---------------- Rank Tracker (Módulo 2) ----------------
