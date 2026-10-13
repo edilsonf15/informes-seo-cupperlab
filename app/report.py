@@ -67,6 +67,56 @@ def _fmt(v):
     return f"{v:,}".replace(",", ".")
 
 
+def area_chart(series, value_key, color="#1cbce4", label_key="month", height=120):
+    """Gráfica de área con línea (estilo widget SE Ranking)."""
+    if not series:
+        return ""
+    vals = [max(0, (r.get(value_key) or 0)) for r in series]
+    labels = [str(r.get(label_key, "")) for r in series]
+    n = len(vals)
+    vmax = max(vals) or 1
+    W, H, pad = 640, height, 10
+    plot_h = H - 26
+    stepx = (W - 2 * pad) / max(1, (n - 1))
+    pts = []
+    for i, v in enumerate(vals):
+        x = pad + i * stepx
+        y = 6 + plot_h - (plot_h * v / vmax)
+        pts.append((x, y))
+    line = " ".join(f"{x:.1f},{y:.1f}" for x, y in pts)
+    area = f"{pts[0][0]:.1f},{6 + plot_h:.1f} " + line + f" {pts[-1][0]:.1f},{6 + plot_h:.1f}"
+    dots = "".join(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="2.5" fill="{color}"/>' for x, y in pts)
+    xl = "".join(
+        f'<text x="{pad + i * stepx:.1f}" y="{H - 4}" text-anchor="middle" font-size="8" fill="#9aa5b1">'
+        f'{(labels[i][-2:] if "-" in labels[i] else labels[i])}</text>' for i in range(n))
+    gid = f"ar{abs(hash(color + str(vmax))) % 99999}"
+    return (
+        f'<svg viewBox="0 0 {W} {H}" width="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">'
+        f'<defs><linearGradient id="{gid}" x1="0" x2="0" y1="0" y2="1">'
+        f'<stop offset="0" stop-color="{color}" stop-opacity="0.22"/>'
+        f'<stop offset="1" stop-color="{color}" stop-opacity="0"/></linearGradient></defs>'
+        f'<polygon points="{area}" fill="url(#{gid})"/>'
+        f'<polyline points="{line}" fill="none" stroke="{color}" stroke-width="2.5"/>{dots}{xl}</svg>')
+
+
+def donut(segments, center_label="KEYWORDS"):
+    """Donut de distribución (Top 3 / 4-10 / ... ) estilo SE Ranking."""
+    total = sum(s["value"] for s in segments) or 1
+    r = 52
+    circ = 2 * 3.14159 * r
+    off = 0.0
+    arcs = ""
+    for s in segments:
+        dash = (s["value"] / total) * circ
+        arcs += (f'<circle cx="70" cy="70" r="{r}" fill="none" stroke="{s["color"]}" stroke-width="15" '
+                 f'stroke-dasharray="{dash:.1f} {circ - dash:.1f}" stroke-dashoffset="{-off:.1f}" '
+                 f'transform="rotate(-90 70 70)"/>')
+        off += dash
+    return (f'<svg viewBox="0 0 140 140" width="140" height="140" xmlns="http://www.w3.org/2000/svg">{arcs}'
+            f'<text x="70" y="66" text-anchor="middle" font-family="Sora,sans-serif" font-size="26" font-weight="800" fill="#0e1319">{int(total)}</text>'
+            f'<text x="70" y="84" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#7b8694">{center_label}</text></svg>')
+
+
 def render_html(context):
     tpl = _env.get_template("report_justificacion.html")
     context.setdefault("fmt", _fmt)
@@ -79,6 +129,8 @@ def render_seranking(context):
     tpl = _env.get_template("report_seranking.html")
     context.setdefault("fmt", _fmt)
     context.setdefault("bar_chart", bar_chart)
+    context.setdefault("area_chart", area_chart)
+    context.setdefault("donut", donut)
     context.setdefault("logo_uri", logo_uri())
     return tpl.render(**context)
 

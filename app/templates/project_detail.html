@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_tabs.html" import project_tabs %}
 {% block page_title %}{{ project.name }}{% endblock %}
 {% block page_active %}panel{% endblock %}
 {% block topbar_title %}{{ project.name }}{% endblock %}
@@ -10,7 +11,14 @@
   </a>
   <a class="btn outline sm" href="{{ url_for('main.configure_project', pid=project.id) }}">Editar fuentes</a>
 {% endblock %}
-{% from "_tabs.html" import project_tabs %}
+
+{% macro tr(v, unit='%') %}
+  {%- if v is none %}<span class="muted">—</span>
+  {%- elif v > 0 %}<span class="delta-up">▲ {{ v }}{{ unit }}</span>
+  {%- elif v < 0 %}<span class="delta-down">▼ {{ (-v) }}{{ unit }}</span>
+  {%- else %}<span class="muted">0{{ unit }}</span>{% endif %}
+{% endmacro %}
+
 {% block body %}
 {{ project_tabs(project, 'panel') }}
 
@@ -22,59 +30,76 @@
     <div style="margin-top:10px"><a class="btn cyan sm" href="{{ url_for('main.configure_project', pid=project.id) }}">Configurar fuentes</a></div>
   </div>
 {% elif dash %}
-  <div class="card">
-    <div class="card-head">
-      <h3>Panel en vivo</h3><div class="sp"></div>
-      <div class="seg">
-        <span class="small muted" style="margin-right:4px">Últimos</span>
-        {% for m in [3,6,12,24] %}<a class="{{ 'on' if m==months }}" href="?months={{ m }}">{{ m }}m</a>{% endfor %}
+  <div style="display:flex;align-items:center;margin-bottom:14px">
+    <span class="section-eyebrow" style="margin:0">Resumen · vs periodo anterior</span><div style="flex:1"></div>
+    <div class="seg"><span class="small muted" style="margin-right:4px">Últimos</span>
+      {% for m in [3,6,12] %}<a class="{{ 'on' if m==months }}" href="?months={{ m }}">{{ m }}m</a>{% endfor %}</div>
+  </div>
+
+  <div class="kgrid" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">
+    {% if dash.ga4 %}
+    <div class="wgt"><div class="wl">Sesiones</div><div class="wv">{{ fmt(dash.ga4.totals.sessions) }}</div>
+      <div class="wtrend">{{ tr(dash.trends.sessions) }}</div>{{ area_chart(dash.ga4.rows,'sessions',color='#1cbce4',height=64)|safe }}</div>
+    <div class="wgt"><div class="wl">Usuarios</div><div class="wv">{{ fmt(dash.ga4.totals.users) }}</div>
+      <div class="wtrend">{{ tr(dash.trends.users) }}</div>{{ area_chart(dash.ga4.rows,'users',color='#0f9bc2',height=64)|safe }}</div>
+    {% endif %}
+    {% if dash.gsc_monthly %}
+    <div class="wgt"><div class="wl">Clics en Google</div><div class="wv">{{ fmt(dash.gsc_totals.clicks) }}</div>
+      <div class="wtrend">{{ tr(dash.trends.clicks) }}</div>{{ area_chart(dash.gsc_monthly,'clicks',color='#f46434',height=64)|safe }}</div>
+    {% endif %}
+  </div>
+
+  {% if dash.gsc_totals %}
+  <div class="kgrid" style="grid-template-columns:repeat(4,1fr);margin-bottom:18px">
+    <div class="wgt"><div class="wl">Impresiones</div><div class="wv">{{ fmt(dash.gsc_totals.impressions) }}</div><div class="wtrend">{{ tr(dash.trends.impressions) }}</div></div>
+    <div class="wgt"><div class="wl">Posición media</div><div class="wv" style="color:var(--orange-600)">{{ dash.gsc_totals.position }}</div><div class="wtrend">{{ tr(dash.trends.position, ' pos') }}</div></div>
+    <div class="wgt"><div class="wl">Keywords</div><div class="wv">{{ fmt(dash.buckets.total) }}</div><div class="wtrend muted">{{ fmt(dash.buckets.top10) }} en Top 10</div></div>
+    <div class="wgt"><div class="wl">Top 3</div><div class="wv" style="color:var(--success)">{{ fmt(dash.buckets.top3) }}</div></div>
+  </div>
+  {% endif %}
+
+  <div class="grid2">
+    {% if dash.distribution %}
+    <div class="card">
+      <div class="card-head"><h3>Distribución de posiciones</h3></div>
+      <div style="display:flex;gap:22px;align-items:center">
+        <div>{{ donut(dash.distribution)|safe }}</div>
+        <div style="flex:1">
+          {% for s in dash.distribution %}
+          <div style="display:flex;align-items:center;gap:8px;margin:6px 0;font-size:13px">
+            <span style="width:10px;height:10px;border-radius:3px;background:{{ s.color }}"></span>{{ s.label }}
+            <span style="margin-left:auto;font-weight:700;font-family:var(--font-mono)">{{ fmt(s.value) }}</span></div>
+          {% endfor %}
+        </div>
       </div>
     </div>
-
-    {% if dash.gsc_totals %}
-    <span class="section-eyebrow">Visibilidad en Google · Search Console</span>
-    <div class="kpi-row" style="margin-bottom:18px">
-      <div class="kpi"><span class="label">Keywords</span><div class="value">{{ fmt(dash.buckets.total) }}</div></div>
-      <div class="kpi"><span class="label">Top 3</span><div class="value">{{ fmt(dash.buckets.top3) }}</div></div>
-      <div class="kpi"><span class="label">Top 10</span><div class="value">{{ fmt(dash.buckets.top10) }}</div></div>
-      <div class="kpi"><span class="label">Clics</span><div class="value">{{ fmt(dash.gsc_totals.clicks) }}</div></div>
-      <div class="kpi"><span class="label">Impresiones</span><div class="value">{{ fmt(dash.gsc_totals.impressions) }}</div></div>
-      <div class="kpi accent"><span class="label">Posición media</span><div class="value">{{ dash.gsc_totals.position }}</div></div>
-    </div>
     {% endif %}
-
-    {% if dash.ga4 %}
-    <span class="section-eyebrow">Tráfico · Google Analytics 4</span>
-    <div class="kpi-row" style="margin-bottom:14px">
-      <div class="kpi good"><span class="label">Sesiones</span><div class="value">{{ fmt(dash.ga4.totals.sessions) }}</div></div>
-      <div class="kpi"><span class="label">Usuarios</span><div class="value">{{ fmt(dash.ga4.totals.users) }}</div></div>
-      <div class="kpi"><span class="label">Nuevos</span><div class="value">{{ fmt(dash.ga4.totals.new_users) }}</div></div>
-      <div class="kpi"><span class="label">Vistas</span><div class="value">{{ fmt(dash.ga4.totals.pageviews) }}</div></div>
-    </div>
-    <div class="chart">{{ bar_chart(dash.ga4.rows, 'sessions', color='#1cbce4')|safe }}</div>
-    {% endif %}
-
     {% if dash.gsc_monthly %}
-    <span class="section-eyebrow" style="margin-top:8px">Clics en Google por mes</span>
-    <div class="chart">{{ bar_chart(dash.gsc_monthly, 'clicks', color='#f46434')|safe }}</div>
+    <div class="card">
+      <div class="card-head"><h3>Impresiones por mes</h3></div>
+      {{ area_chart(dash.gsc_monthly,'impressions',color='#0f9bc2',height=150)|safe }}
+    </div>
     {% endif %}
+  </div>
 
-    {% if dash.keywords %}
-    <span class="section-eyebrow" style="margin-top:8px">Top keywords y su posición</span>
+  {% if dash.keywords %}
+  <div class="card">
+    <div class="card-head"><h3>Top keywords</h3><div class="sp"></div>
+      <a class="btn outline sm" href="{{ url_for('main.ranktracker', pid=project.id) }}">Ver todas →</a></div>
     <div class="tbl-wrap">
       <table>
-        <thead><tr><th>Keyword</th><th>Impresiones</th><th>Clics</th><th>Posición</th></tr></thead>
+        <thead><tr><th>Keyword</th><th>Posición</th><th>Impresiones</th><th>Clics</th><th>CTR</th></tr></thead>
         <tbody>
-        {% for k in dash.keywords[:15] %}
-          <tr><td><b>{{ k.query }}</b></td><td>{{ fmt(k.impressions) }}</td><td>{{ fmt(k.clicks) }}</td><td>{{ k.position }}</td></tr>
+        {% for k in dash.keywords[:12] %}
+          <tr><td><b>{{ k.query }}</b></td><td>{{ k.position }}</td><td>{{ fmt(k.impressions) }}</td><td>{{ fmt(k.clicks) }}</td><td>{{ k.ctr }}%</td></tr>
         {% endfor %}
         </tbody>
       </table>
     </div>
-    {% endif %}
-
-    {% if dash.warnings %}<p class="hint" style="margin-top:12px">⚠ {{ dash.warnings|join(' · ') }}</p>{% endif %}
   </div>
+  {% endif %}
+
+  {% if dash.warnings %}<p class="hint" style="margin-top:4px">⚠ {{ dash.warnings|join(' · ') }}</p>{% endif %}
 {% endif %}
 
 <div class="grid2">
@@ -99,7 +124,7 @@
   </div>
 
   <div class="card">
-    <div class="card-head"><h3>Generar justificación</h3></div>
+    <div class="card-head"><h3>Generar informe</h3></div>
     <form method="post" action="{{ url_for('main.generate', pid=project.id) }}">
       <label>Tipo de informe</label>
       <select name="report_type">
@@ -113,16 +138,16 @@
       <label>Nombre del cliente (portada)</label>
       <input type="text" name="client_name" value="{{ project.name }}">
       <div class="grid2">
-        <div><label>Fase / título</label><input type="text" name="fase" value="2ª FASE DE JUSTIFICACIÓN SITIO WEB Y PRESENCIA EN INTERNET"></div>
+        <div><label>Fase / título (solo justificación)</label><input type="text" name="fase" value="2ª FASE DE JUSTIFICACIÓN SITIO WEB Y PRESENCIA EN INTERNET"></div>
         <div><label>Fecha de elaboración</label><input type="date" name="fecha_elaboracion" value="{{ today }}"></div>
       </div>
       <div class="row-actions" style="margin-top:18px">
         <button class="btn accent" type="submit">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/></svg>
-          Generar informe PDF
+          Generar PDF
         </button>
       </div>
-      <div class="hint" style="margin-top:8px">Lee los datos reales de Google y rastrea la web. Puede tardar ~1 min.</div>
+      <div class="hint" style="margin-top:8px">Usa los datos reales de Google. Puede tardar ~1 min.</div>
     </form>
   </div>
 </div>

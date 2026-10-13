@@ -179,7 +179,8 @@ def project_detail(pid):
                            competitors=db.project_competitors(project),
                            reports=db.list_reports(pid), today=end,
                            dash=dash, connected=connected, months=months,
-                           bar_chart=report.bar_chart, fmt=report._fmt)
+                           bar_chart=report.bar_chart, area_chart=report.area_chart,
+                           donut=report.donut, fmt=report._fmt)
 
 
 # ---------------- Site Audit (Módulo 1) ----------------
@@ -224,8 +225,10 @@ def ranktracker(pid):
     start = (today - timedelta(days=30 * months)).isoformat()
     end = today.isoformat()
     rank = service.rank_data(project, start, end)
-    return render_template("ranktracker.html", project=project, rank=rank, months=months,
-                           bar_chart=report.bar_chart, fmt=report._fmt)
+    dist = service.keyword_distribution([{"position": r["position"]} for r in rank.get("rows", [])])
+    return render_template("ranktracker.html", project=project, rank=rank, months=months, dist=dist,
+                           bar_chart=report.bar_chart, area_chart=report.area_chart,
+                           donut=report.donut, fmt=report._fmt)
 
 
 @bp.route("/projects/<int:pid>/delete", methods=["POST"])

@@ -27,12 +27,29 @@
     {% if rank.totals %}<div class="kpi"><span class="label">Clics</span><div class="value">{{ fmt(rank.totals.clicks) }}</div></div>{% endif %}
   </div>
 
-  {% if rank.monthly %}
-  <div class="card">
-    <div class="card-head"><h3>Evolución de impresiones</h3></div>
-    <div class="chart">{{ bar_chart(rank.monthly, 'impressions', color='#12324a')|safe }}</div>
+  <div class="grid2">
+    {% if dist %}
+    <div class="card">
+      <div class="card-head"><h3>Distribución de posiciones</h3></div>
+      <div style="display:flex;gap:22px;align-items:center">
+        <div>{{ donut(dist)|safe }}</div>
+        <div style="flex:1">
+          {% for s in dist %}
+          <div style="display:flex;align-items:center;gap:8px;margin:6px 0;font-size:13px">
+            <span style="width:10px;height:10px;border-radius:3px;background:{{ s.color }}"></span>{{ s.label }}
+            <span style="margin-left:auto;font-weight:700;font-family:var(--font-mono)">{{ fmt(s.value) }}</span></div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    {% if rank.monthly %}
+    <div class="card">
+      <div class="card-head"><h3>Evolución de impresiones</h3></div>
+      {{ area_chart(rank.monthly, 'impressions', color='#1cbce4', height=150)|safe }}
+    </div>
+    {% endif %}
   </div>
-  {% endif %}
 
   <div class="card">
     <div class="card-head"><h3>Keywords y posición</h3><div class="sp"></div>

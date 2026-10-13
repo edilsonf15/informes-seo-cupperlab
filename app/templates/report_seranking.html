@@ -5,206 +5,222 @@
 <title>Informe SEO · {{ cliente }}</title>
 <style>
   *{box-sizing:border-box}
-  body{font-family:"Plus Jakarta Sans",Arial,sans-serif;color:#1a2029;font-size:12px;line-height:1.55;margin:0}
-  h1,h2,h3{font-family:"Sora","Plus Jakarta Sans",Arial,sans-serif;color:#0e1319;margin:0;letter-spacing:-.01em}
-  .section{break-before:page;padding-top:6px}
+  body{font-family:"Plus Jakarta Sans",Arial,sans-serif;color:#283038;font-size:12px;line-height:1.5;margin:0;background:#fff}
+  h1,h2,h3,h4{font-family:"Sora","Plus Jakarta Sans",Arial,sans-serif;color:#0e1319;margin:0;letter-spacing:-.01em}
+  .section{break-before:page;padding-top:8px}
   .section:first-of-type{break-before:auto}
-  h2.sec{font-size:17px;color:#12324a;border-bottom:2px solid #1cbce4;padding-bottom:7px;margin-bottom:14px}
-  .eyebrow{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#7b8694}
-  p{margin:0 0 9px;text-align:justify}
-  table.t{width:100%;border-collapse:collapse;margin:8px 0 14px;font-size:10.5px}
-  table.t th{background:#12324a;color:#fff;text-align:left;padding:6px 8px;font-size:10px}
-  table.t td{border:1px solid #dee3e9;padding:5px 8px}
-  table.t tr:nth-child(even) td{background:#f7f9fb}
-  .kpis{display:flex;gap:10px;margin:10px 0 16px;flex-wrap:wrap}
-  .kpi{flex:1;min-width:90px;border:1px solid #dee3e9;border-radius:10px;padding:12px 10px;text-align:center}
-  .kpi .n{font-family:"Sora";font-size:22px;font-weight:800;color:#12324a}
-  .kpi .l{font-family:"JetBrains Mono",monospace;font-size:9px;color:#7b8694;text-transform:uppercase;letter-spacing:.4px;margin-top:4px}
-  .kpi.cyan .n{color:#0f9bc2}.kpi.orange .n{color:#e24d1c}.kpi.green .n{color:#1f9d6b}
-  .note{background:#f3f7fa;border-left:4px solid #1cbce4;padding:9px 12px;margin:10px 0;font-size:10.5px;color:#334}
-  .up{color:#1f9d6b;font-weight:700}.down{color:#d0402a;font-weight:700}.eq{color:#a3adba}
-  .chart{margin:6px 0 14px}
+  .sechead{display:flex;align-items:center;gap:10px;margin:0 0 14px}
+  .sechead .num{font-family:"JetBrains Mono",monospace;font-size:11px;color:#1cbce4;font-weight:700}
+  .sechead h2{font-size:18px;color:#12324a}
+  .sechead .rule{flex:1;height:1px;background:#e8ecf1}
+  /* widgets */
+  .wrow{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+  .w{flex:1;min-width:150px;border:1px solid #e8ecf1;border-radius:12px;padding:14px 16px;background:#fff}
+  .w .wl{font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#7b8694}
+  .w .wn{font-family:"Sora";font-size:26px;font-weight:800;color:#0e1319;line-height:1.1;margin-top:3px}
+  .w .wt{margin-top:2px;font-size:10.5px;font-weight:700}
+  .w .spark{margin-top:6px}
+  .tup{color:#1f9d6b}.tdn{color:#d0402a}.teq{color:#a3adba}
+  .card{border:1px solid #e8ecf1;border-radius:12px;padding:16px 18px;margin-bottom:14px}
+  .card h3{font-size:14px;margin:0 0 10px;color:#12324a}
+  table.t{width:100%;border-collapse:collapse;font-size:10.5px}
+  table.t th{text-align:left;padding:7px 9px;background:#f7f9fb;color:#7b8694;font-size:9.5px;
+    text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid #e8ecf1;font-family:"JetBrains Mono",monospace;font-weight:500}
+  table.t td{padding:7px 9px;border-bottom:1px solid #f1f4f7}
+  table.t tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;padding:1px 7px;border-radius:999px;font-size:10px;font-weight:700;font-family:"JetBrains Mono",monospace}
+  .b-up{background:#e4f6ee;color:#1f9d6b}.b-dn{background:#fbe7e5;color:#d0402a}.b-new{background:#eef2f6;color:#7b8694}
+  .donutwrap{display:flex;gap:24px;align-items:center}
+  .legend{font-size:11px}.legend .li{display:flex;align-items:center;gap:8px;margin:5px 0}
+  .legend .dot{width:10px;height:10px;border-radius:3px;flex:0 0 10px}
+  .legend .lv{margin-left:auto;font-weight:700;font-family:"JetBrains Mono",monospace}
+  .note{background:#f3f7fa;border-left:3px solid #1cbce4;padding:8px 11px;margin:8px 0;font-size:10.5px;color:#334;border-radius:0 6px 6px 0}
   /* cover */
-  .cover{height:95vh;display:flex;flex-direction:column}
-  .cover .band{background:#0e1319;color:#fff;padding:34px 30px;border-radius:12px}
-  .cover .band img{height:30px;margin-bottom:22px}
-  .cover .band .tag{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:1px;color:#1cbce4}
-  .cover .band h1{color:#fff;font-size:30px;margin:10px 0 4px}
-  .cover .band h2{color:#c6cdd5;font-size:16px;font-weight:500}
-  .cover .meta{margin-top:26px;border:1px solid #dee3e9;border-radius:10px;padding:18px 20px}
-  .cover .meta table{width:100%;font-size:13px}
-  .cover .meta td{padding:7px 4px;border-bottom:1px solid #eef2f5}
-  .cover .meta td:first-child{color:#667;width:40%}
-  .cover .idx{margin-top:22px}
-  .cover .idx h3{font-size:13px;color:#12324a;margin-bottom:8px}
-  .cover .idx ol{margin:0;padding-left:20px;font-size:12px;color:#333}.cover .idx li{margin:3px 0}
-  .cover .foot{margin-top:auto;color:#889;font-size:10.5px}.cover .foot b{color:#0f9bc2}
-  .scorewrap{display:flex;gap:18px;align-items:center;margin:4px 0 14px}
-  .foot-gen{margin-top:18px;color:#99a;font-size:10px;text-align:center}
+  .cover{height:94vh;display:flex;flex-direction:column;padding-top:8px}
+  .cover .top{height:5px;background:linear-gradient(90deg,#1cbce4,#0f9bc2);border-radius:3px}
+  .cover img{height:30px;margin:34px 0 0}
+  .cover .big{margin-top:70px}
+  .cover .tag{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.2em;color:#0f9bc2;text-transform:uppercase}
+  .cover h1{font-size:40px;margin:10px 0 0;color:#0e1319}
+  .cover .site{font-size:17px;color:#58626f;margin-top:8px}
+  .cover .meta{margin-top:40px;display:flex;gap:40px;border-top:1px solid #e8ecf1;padding-top:20px}
+  .cover .meta .k{font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#7b8694}
+  .cover .meta .v{font-size:14px;font-weight:700;color:#12324a;margin-top:3px}
+  .cover .foot{margin-top:auto;color:#7b8694;font-size:11px}.cover .foot b{color:#0f9bc2}
+  .foot-gen{margin-top:16px;color:#a3adba;font-size:9.5px;text-align:center}
 </style>
 </head>
 <body>
 
+{% macro trend(v, unit='%') %}
+  {% if v is none %}<span class="teq">—</span>
+  {% elif v > 0 %}<span class="tup">▲ {{ v }}{{ unit }}</span>
+  {% elif v < 0 %}<span class="tdn">▼ {{ (-v) }}{{ unit }}</span>
+  {% else %}<span class="teq">0{{ unit }}</span>{% endif %}
+{% endmacro %}
+
 <!-- COVER -->
 <div class="cover">
-  <div class="band">
-    {% if logo_uri %}<img src="{{ logo_uri }}" alt="Cupperlab">{% endif %}
-    <div class="tag">INFORME SEO</div>
+  <div class="top"></div>
+  {% if logo_uri %}<img src="{{ logo_uri }}" alt="Cupperlab">{% endif %}
+  <div class="big">
+    <div class="tag">Informe SEO</div>
     <h1>Análisis de posicionamiento</h1>
-    <h2>{{ cliente }}</h2>
+    <div class="site">{{ dominio }}</div>
   </div>
   <div class="meta">
-    <table>
-      <tr><td>Cliente</td><td><b>{{ cliente }}</b></td></tr>
-      <tr><td>Sitio web</td><td>{{ dominio }}</td></tr>
-      <tr><td>Periodo analizado</td><td>{{ periodo_ini }} — {{ periodo_fin }}</td></tr>
-      <tr><td>Generado</td><td>{{ generado }}</td></tr>
-    </table>
+    <div><div class="k">Cliente</div><div class="v">{{ cliente }}</div></div>
+    <div><div class="k">Periodo</div><div class="v">{{ periodo_ini }} — {{ periodo_fin }}</div></div>
+    <div><div class="k">Preparado por</div><div class="v">Cupperlab</div></div>
+    <div><div class="k">Fecha</div><div class="v">{{ generado }}</div></div>
   </div>
-  <div class="idx">
-    <h3>Contenido</h3>
-    <ol>
-      <li>Resumen ejecutivo</li>
-      <li>Posiciones en Google (keywords)</li>
-      <li>Tráfico del sitio (Analytics)</li>
-      <li>Visibilidad en búsqueda (Search Console)</li>
-      <li>Auditoría técnica del sitio</li>
-      <li>Competencia</li>
-    </ol>
-  </div>
-  <div class="foot">Informe elaborado por <b>Cupperlab</b> · Mejoramos tu rentabilidad · datos verificados en vivo de Google.</div>
+  <div class="foot">Datos verificados en vivo de Google Analytics y Search Console · <b>Cupperlab</b> · Mejoramos tu rentabilidad.</div>
 </div>
 
-<!-- 1. RESUMEN -->
+<!-- 1. OVERVIEW -->
 <div class="section">
-  <div class="eyebrow">01 · Resumen</div>
-  <h2 class="sec">Resumen ejecutivo</h2>
-  <div class="kpis">
-    {% if data.audit %}<div class="kpi green"><div class="n">{{ data.audit.score }}</div><div class="l">Salud del sitio</div></div>{% endif %}
-    <div class="kpi cyan"><div class="n">{{ fmt(buckets.total) }}</div><div class="l">Keywords</div></div>
-    <div class="kpi"><div class="n">{{ fmt(buckets.top10) }}</div><div class="l">En Top 10</div></div>
-    {% if data.gsc_totals %}<div class="kpi"><div class="n">{{ fmt(data.gsc_totals.clicks) }}</div><div class="l">Clics</div></div>
-    <div class="kpi orange"><div class="n">{{ data.gsc_totals.position }}</div><div class="l">Posición media</div></div>{% endif %}
-    {% if data.ga4 %}<div class="kpi"><div class="n">{{ fmt(data.ga4.totals.sessions) }}</div><div class="l">Sesiones</div></div>{% endif %}
+  <div class="sechead"><span class="num">01</span><h2>Resumen general</h2><span class="rule"></span></div>
+  <div class="wrow">
+    {% if data.ga4 %}
+    <div class="w"><div class="wl">Sesiones</div><div class="wn">{{ fmt(data.ga4.totals.sessions) }}</div>
+      <div class="wt">{{ trend(data.trends.sessions) }}</div>
+      <div class="spark">{{ area_chart(data.ga4.rows, 'sessions', color='#1cbce4', height=70)|safe }}</div></div>
+    <div class="w"><div class="wl">Usuarios</div><div class="wn">{{ fmt(data.ga4.totals.users) }}</div>
+      <div class="wt">{{ trend(data.trends.users) }}</div>
+      <div class="spark">{{ area_chart(data.ga4.rows, 'users', color='#0f9bc2', height=70)|safe }}</div></div>
+    {% endif %}
+    {% if data.gsc_totals %}
+    <div class="w"><div class="wl">Clics en Google</div><div class="wn">{{ fmt(data.gsc_totals.clicks) }}</div>
+      <div class="wt">{{ trend(data.trends.clicks) }}</div>
+      <div class="spark">{{ area_chart(data.gsc_monthly, 'clicks', color='#f46434', height=70)|safe }}</div></div>
+    {% endif %}
   </div>
-  <p>Este informe resume el rendimiento SEO de <b>{{ dominio }}</b> en el periodo analizado: posiciones en
-     Google, tráfico del sitio, visibilidad en búsqueda y el estado técnico de la web. Todos los datos son
-     reales y verificados en vivo desde Google Analytics y Google Search Console.</p>
+  <div class="wrow">
+    {% if data.gsc_totals %}
+    <div class="w"><div class="wl">Impresiones</div><div class="wn">{{ fmt(data.gsc_totals.impressions) }}</div>
+      <div class="wt">{{ trend(data.trends.impressions) }}</div></div>
+    <div class="w"><div class="wl">Posición media</div><div class="wn">{{ data.gsc_totals.position }}</div>
+      <div class="wt">{{ trend(data.trends.position, unit=' pos') }}</div></div>
+    {% endif %}
+    <div class="w"><div class="wl">Keywords</div><div class="wn">{{ fmt(buckets.total) }}</div>
+      <div class="wt teq">{{ fmt(buckets.top10) }} en Top 10</div></div>
+    {% if data.audit %}
+    <div class="w"><div class="wl">Salud del sitio</div><div class="wn" style="color:{{ '#1f9d6b' if data.audit.score>=80 else ('#dfa019' if data.audit.score>=50 else '#d0402a') }}">{{ data.audit.score }}</div>
+      <div class="wt teq">/ 100</div></div>
+    {% endif %}
+  </div>
+  <p class="note">Comparación frente al periodo anterior de igual duración. ▲ mejora · ▼ baja.</p>
 </div>
 
-<!-- 2. POSICIONES -->
+<!-- 2. RANKINGS -->
 <div class="section">
-  <div class="eyebrow">02 · Rankings</div>
-  <h2 class="sec">Posiciones en Google</h2>
+  <div class="sechead"><span class="num">02</span><h2>Posiciones en Google</h2><span class="rule"></span></div>
   {% if data.rank and data.rank.rows %}
-  <div class="kpis">
-    <div class="kpi green"><div class="n">{{ fmt(data.rank.buckets.top3) }}</div><div class="l">Top 3</div></div>
-    <div class="kpi cyan"><div class="n">{{ fmt(data.rank.buckets.top10) }}</div><div class="l">Top 10</div></div>
-    <div class="kpi"><div class="n">{{ fmt(data.rank.buckets.top100) }}</div><div class="l">Top 100</div></div>
-    <div class="kpi orange"><div class="n">{{ data.rank.avg_position }}</div><div class="l">Posición media</div></div>
+  <div class="card">
+    <div class="donutwrap">
+      <div>{{ donut(data.distribution)|safe }}</div>
+      <div class="legend" style="flex:1">
+        {% for s in data.distribution %}
+        <div class="li"><span class="dot" style="background:{{ s.color }}"></span>{{ s.label }}<span class="lv">{{ fmt(s.value) }}</span></div>
+        {% endfor %}
+      </div>
+      <div style="flex:1">
+        <div class="wl" style="font-family:'JetBrains Mono';font-size:9.5px;color:#7b8694;text-transform:uppercase">Posición media</div>
+        <div style="font-family:'Sora';font-size:34px;font-weight:800;color:#0f9bc2">{{ data.rank.avg_position }}</div>
+        <div class="wl" style="font-family:'JetBrains Mono';font-size:9.5px;color:#7b8694;text-transform:uppercase;margin-top:10px">Keywords en Top 3</div>
+        <div style="font-family:'Sora';font-size:34px;font-weight:800;color:#1f9d6b">{{ fmt(data.rank.buckets.top3) }}</div>
+      </div>
+    </div>
   </div>
-  <p>Palabras clave por las que el sitio aparece en Google, con su posición y la variación frente al periodo
-     anterior (▲ mejora, ▼ baja).</p>
-  <table class="t">
-    <tr><th>#</th><th>Keyword</th><th>Posición</th><th>Cambio</th><th>Impresiones</th><th>Clics</th><th>CTR</th></tr>
-    {% for k in data.rank.rows[:35] %}
-    <tr>
-      <td>{{ loop.index }}</td><td>{{ k.query }}</td><td>{{ k.position }}</td>
-      <td>{% if k.delta is none %}<span class="eq">nuevo</span>{% elif k.delta>0 %}<span class="up">▲ {{ k.delta }}</span>{% elif k.delta<0 %}<span class="down">▼ {{ (-k.delta) }}</span>{% else %}<span class="eq">=</span>{% endif %}</td>
-      <td>{{ fmt(k.impressions) }}</td><td>{{ fmt(k.clicks) }}</td><td>{{ k.ctr }}%</td>
-    </tr>
-    {% endfor %}
-  </table>
-  {% if data.rank.rows|length > 35 %}<p class="note">Se muestran las 35 principales de {{ fmt(data.rank.rows|length) }} keywords con presencia en el periodo.</p>{% endif %}
-  {% else %}
-  <div class="note">Conecta el sitio de Search Console para ver las posiciones de keywords.</div>
-  {% endif %}
-</div>
-
-<!-- 3. TRAFICO -->
-<div class="section">
-  <div class="eyebrow">03 · Tráfico</div>
-  <h2 class="sec">Tráfico del sitio (Analytics)</h2>
-  {% if data.ga4 %}
-  <div class="kpis">
-    <div class="kpi cyan"><div class="n">{{ fmt(data.ga4.totals.sessions) }}</div><div class="l">Sesiones</div></div>
-    <div class="kpi"><div class="n">{{ fmt(data.ga4.totals.users) }}</div><div class="l">Usuarios</div></div>
-    <div class="kpi"><div class="n">{{ fmt(data.ga4.totals.new_users) }}</div><div class="l">Nuevos</div></div>
-    <div class="kpi"><div class="n">{{ fmt(data.ga4.totals.pageviews) }}</div><div class="l">Vistas</div></div>
-  </div>
-  <div class="chart">{{ bar_chart(data.ga4.rows, 'sessions', color='#1cbce4')|safe }}</div>
-  <table class="t">
-    <tr><th>Mes</th><th>Sesiones</th><th>Usuarios</th><th>Nuevos</th><th>Vistas</th></tr>
-    {% for r in data.ga4.rows %}<tr><td>{{ r.month }}</td><td>{{ fmt(r.sessions) }}</td><td>{{ fmt(r.users) }}</td><td>{{ fmt(r.new_users) }}</td><td>{{ fmt(r.pageviews) }}</td></tr>{% endfor %}
-  </table>
-  {% else %}<div class="note">Conecta la propiedad de Google Analytics 4 para ver el tráfico.</div>{% endif %}
-</div>
-
-<!-- 4. VISIBILIDAD -->
-<div class="section">
-  <div class="eyebrow">04 · Búsqueda</div>
-  <h2 class="sec">Visibilidad en búsqueda (Search Console)</h2>
-  {% if data.gsc_monthly %}
-  <div class="kpis">
-    <div class="kpi"><div class="n">{{ fmt(data.gsc_totals.clicks) }}</div><div class="l">Clics</div></div>
-    <div class="kpi"><div class="n">{{ fmt(data.gsc_totals.impressions) }}</div><div class="l">Impresiones</div></div>
-    <div class="kpi"><div class="n">{{ data.gsc_totals.ctr }}%</div><div class="l">CTR</div></div>
-    <div class="kpi orange"><div class="n">{{ data.gsc_totals.position }}</div><div class="l">Posición media</div></div>
-  </div>
-  <div class="chart">{{ bar_chart(data.gsc_monthly, 'clicks', color='#f46434')|safe }}</div>
-  <table class="t">
-    <tr><th>Mes</th><th>Clics</th><th>Impresiones</th><th>Posición media</th></tr>
-    {% for r in data.gsc_monthly %}<tr><td>{{ r.month }}</td><td>{{ fmt(r.clicks) }}</td><td>{{ fmt(r.impressions) }}</td><td>{{ r.position }}</td></tr>{% endfor %}
-  </table>
-  {% else %}<div class="note">Conecta el sitio de Search Console para ver la visibilidad en búsqueda.</div>{% endif %}
-</div>
-
-<!-- 5. AUDITORIA -->
-<div class="section">
-  <div class="eyebrow">05 · Técnico</div>
-  <h2 class="sec">Auditoría técnica del sitio</h2>
-  {% if data.audit %}
-  <div class="kpis">
-    <div class="kpi green"><div class="n">{{ data.audit.score }}</div><div class="l">Salud / 100</div></div>
-    <div class="kpi"><div class="n">{{ fmt(data.audit.crawled) }}</div><div class="l">Páginas</div></div>
-    <div class="kpi orange"><div class="n">{{ fmt(data.audit.counts.errors) }}</div><div class="l">Errores</div></div>
-    <div class="kpi"><div class="n">{{ fmt(data.audit.counts.warnings) }}</div><div class="l">Avisos</div></div>
-  </div>
-  {% if data.audit.errors or data.audit.warnings %}
-  <table class="t">
-    <tr><th>Tipo</th><th>Problema</th><th>Páginas</th></tr>
-    {% for i in data.audit.errors %}<tr><td><span class="down">Error</span></td><td>{{ i.label }}</td><td>{{ i.count }}</td></tr>{% endfor %}
-    {% for i in data.audit.warnings %}<tr><td style="color:#d9920a">Aviso</td><td>{{ i.label }}</td><td>{{ i.count }}</td></tr>{% endfor %}
-  </table>
-  {% endif %}
-  {% else %}<div class="note">Ejecuta la auditoría del sitio (módulo Auditoría) para incluir aquí el análisis técnico.</div>{% endif %}
-</div>
-
-<!-- 6. COMPETENCIA -->
-<div class="section">
-  <div class="eyebrow">06 · Mercado</div>
-  <h2 class="sec">Competencia</h2>
-  {% if data.competition and data.competition.series %}
-    {% set maxvi = (data.competition.series | map(attribute='latest') | max) or 1 %}
-    <p>Índice de visibilidad (Sistrix) del sitio frente a sus competidores de referencia.</p>
+  <div class="card">
+    <h3>Keywords y su posición</h3>
     <table class="t">
-      <tr><th>Dominio</th><th>Rol</th><th>Índice de visibilidad</th><th style="width:38%">Comparativa</th></tr>
-      {% for s in data.competition.series | sort(attribute='latest', reverse=true) %}
-      <tr><td>{% if s.is_beneficiary %}<b>{{ s.domain }}</b>{% else %}{{ s.domain }}{% endif %}</td>
-        <td>{% if s.is_beneficiary %}<span class="up">Tu sitio</span>{% else %}Competidor{% endif %}</td>
-        <td>{{ s.latest }}</td>
-        <td><div style="background:#eef2f6;border-radius:4px;height:13px"><div style="height:13px;border-radius:4px;width:{{ (100*s.latest/maxvi)|round(1) }}%;background:{{ '#1f9d6b' if s.is_beneficiary else '#12324a' }}"></div></div></td></tr>
+      <tr><th>#</th><th>Keyword</th><th>Posición</th><th>Cambio</th><th>Impresiones</th><th>Clics</th><th>CTR</th></tr>
+      {% for k in data.rank.rows[:40] %}
+      <tr>
+        <td>{{ loop.index }}</td><td><b>{{ k.query }}</b></td><td>{{ k.position }}</td>
+        <td>{% if k.delta is none %}<span class="badge b-new">nuevo</span>{% elif k.delta>0 %}<span class="badge b-up">▲ {{ k.delta }}</span>{% elif k.delta<0 %}<span class="badge b-dn">▼ {{ (-k.delta) }}</span>{% else %}<span class="badge b-new">=</span>{% endif %}</td>
+        <td>{{ fmt(k.impressions) }}</td><td>{{ fmt(k.clicks) }}</td><td>{{ k.ctr }}%</td>
+      </tr>
       {% endfor %}
     </table>
-  {% elif competitors %}
-    <table class="t"><tr><th>Dominio</th><th>Rol</th></tr>
-      <tr><td><b>{{ dominio }}</b></td><td class="up">Tu sitio</td></tr>
-      {% for c in competitors %}<tr><td>{{ c }}</td><td>Competidor</td></tr>{% endfor %}
+  </div>
+  {% else %}<div class="note">Conecta Search Console para ver las posiciones de keywords.</div>{% endif %}
+</div>
+
+<!-- 3. TRAFFIC -->
+<div class="section">
+  <div class="sechead"><span class="num">03</span><h2>Tráfico del sitio</h2><span class="rule"></span></div>
+  {% if data.ga4 %}
+  <div class="card">
+    <h3>Sesiones por mes</h3>
+    {{ area_chart(data.ga4.rows, 'sessions', color='#1cbce4', height=150)|safe }}
+  </div>
+  <div class="card">
+    <table class="t">
+      <tr><th>Mes</th><th>Sesiones</th><th>Usuarios</th><th>Nuevos</th><th>Vistas</th></tr>
+      {% for r in data.ga4.rows %}<tr><td>{{ r.month }}</td><td>{{ fmt(r.sessions) }}</td><td>{{ fmt(r.users) }}</td><td>{{ fmt(r.new_users) }}</td><td>{{ fmt(r.pageviews) }}</td></tr>{% endfor %}
     </table>
-    <p class="note">El índice de visibilidad comparado se activa al conectar Sistrix en Ajustes.</p>
-  {% else %}
-    <div class="note">Añade dominios competidores en la configuración del proyecto para incluir la comparativa.</div>
+  </div>
+  {% else %}<div class="note">Conecta Google Analytics 4 para ver el tráfico.</div>{% endif %}
+</div>
+
+<!-- 4. SEARCH CONSOLE -->
+<div class="section">
+  <div class="sechead"><span class="num">04</span><h2>Visibilidad en búsqueda</h2><span class="rule"></span></div>
+  {% if data.gsc_monthly %}
+  <div class="card"><h3>Clics por mes</h3>{{ area_chart(data.gsc_monthly, 'clicks', color='#f46434', height=140)|safe }}</div>
+  <div class="card"><h3>Impresiones por mes</h3>{{ area_chart(data.gsc_monthly, 'impressions', color='#0f9bc2', height=140)|safe }}</div>
+  <div class="card">
+    <table class="t">
+      <tr><th>Mes</th><th>Clics</th><th>Impresiones</th><th>Posición media</th></tr>
+      {% for r in data.gsc_monthly %}<tr><td>{{ r.month }}</td><td>{{ fmt(r.clicks) }}</td><td>{{ fmt(r.impressions) }}</td><td>{{ r.position }}</td></tr>{% endfor %}
+    </table>
+  </div>
+  {% else %}<div class="note">Conecta Search Console para ver la visibilidad en búsqueda.</div>{% endif %}
+</div>
+
+<!-- 5. AUDIT -->
+<div class="section">
+  <div class="sechead"><span class="num">05</span><h2>Auditoría técnica</h2><span class="rule"></span></div>
+  {% if data.audit %}
+  <div class="wrow">
+    <div class="w"><div class="wl">Salud / 100</div><div class="wn" style="color:{{ '#1f9d6b' if data.audit.score>=80 else ('#dfa019' if data.audit.score>=50 else '#d0402a') }}">{{ data.audit.score }}</div></div>
+    <div class="w"><div class="wl">Páginas</div><div class="wn">{{ fmt(data.audit.crawled) }}</div></div>
+    <div class="w"><div class="wl">Errores</div><div class="wn" style="color:#d0402a">{{ fmt(data.audit.counts.errors) }}</div></div>
+    <div class="w"><div class="wl">Avisos</div><div class="wn" style="color:#dfa019">{{ fmt(data.audit.counts.warnings) }}</div></div>
+  </div>
+  {% if data.audit.errors or data.audit.warnings %}
+  <div class="card"><table class="t">
+    <tr><th>Severidad</th><th>Problema</th><th>Páginas</th></tr>
+    {% for i in data.audit.errors %}<tr><td><span class="badge b-dn">Error</span></td><td>{{ i.label }}</td><td>{{ i.count }}</td></tr>{% endfor %}
+    {% for i in data.audit.warnings %}<tr><td><span class="badge" style="background:#fdf2dc;color:#d9920a">Aviso</span></td><td>{{ i.label }}</td><td>{{ i.count }}</td></tr>{% endfor %}
+  </table></div>
   {% endif %}
+  {% else %}<div class="note">Ejecuta la auditoría del sitio (pestaña Auditoría) para incluir aquí el análisis técnico.</div>{% endif %}
+</div>
+
+<!-- 6. COMPETITORS -->
+<div class="section">
+  <div class="sechead"><span class="num">06</span><h2>Competencia</h2><span class="rule"></span></div>
+  {% if data.competition and data.competition.series %}
+    {% set maxvi = (data.competition.series | map(attribute='latest') | max) or 1 %}
+    <div class="card"><table class="t">
+      <tr><th>Dominio</th><th>Rol</th><th>Índice de visibilidad</th><th style="width:40%">Comparativa</th></tr>
+      {% for s in data.competition.series | sort(attribute='latest', reverse=true) %}
+      <tr><td>{% if s.is_beneficiary %}<b>{{ s.domain }}</b>{% else %}{{ s.domain }}{% endif %}</td>
+        <td>{% if s.is_beneficiary %}<span class="tup">Tu sitio</span>{% else %}Competidor{% endif %}</td>
+        <td>{{ s.latest }}</td>
+        <td><div style="background:#eef2f6;border-radius:4px;height:12px"><div style="height:12px;border-radius:4px;width:{{ (100*s.latest/maxvi)|round(1) }}%;background:{{ '#1f9d6b' if s.is_beneficiary else '#12324a' }}"></div></div></td></tr>
+      {% endfor %}
+    </table></div>
+  {% elif competitors %}
+    <div class="card"><table class="t"><tr><th>Dominio</th><th>Rol</th></tr>
+      <tr><td><b>{{ dominio }}</b></td><td class="tup">Tu sitio</td></tr>
+      {% for c in competitors %}<tr><td>{{ c }}</td><td>Competidor</td></tr>{% endfor %}
+    </table></div>
+    <div class="note">El índice de visibilidad comparado se activa al conectar Sistrix en Ajustes.</div>
+  {% else %}<div class="note">Añade dominios competidores en la configuración del proyecto.</div>{% endif %}
   <div class="foot-gen">Informe generado el {{ generado }} · Cupperlab · informes.cupperlab.com</div>
 </div>
 

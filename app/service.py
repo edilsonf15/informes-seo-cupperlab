@@ -34,6 +34,8 @@ def dashboard_data(project, start, end):
     """Datos en vivo para el panel (sin rastreo, para que cargue rápido)."""
     data = gather_report_data(project, start, end, include_crawl=False)
     data["buckets"] = keyword_buckets(data.get("keywords"))
+    data["distribution"] = keyword_distribution(data.get("keywords"))
+    data["trends"] = _compute_trends(project, start, end, data)
     return data
 
 
@@ -77,13 +79,61 @@ def rank_data(project, start, end):
     return out
 
 
+def keyword_distribution(keywords):
+    """Reparte keywords por tramos de posición (para el donut, estilo SE Ranking)."""
+    kws = keywords or []
+    def c(lo, hi):
+        return sum(1 for k in kws if k.get("position") and lo < k["position"] <= hi)
+    return [
+        {"label": "Top 3", "value": sum(1 for k in kws if k.get("position") and k["position"] <= 3), "color": "#1f9d6b"},
+        {"label": "4 – 10", "value": c(3, 10), "color": "#1cbce4"},
+        {"label": "11 – 20", "value": c(10, 20), "color": "#0f9bc2"},
+        {"label": "21 – 50", "value": c(20, 50), "color": "#dfa019"},
+        {"label": "51 – 100", "value": c(50, 100), "color": "#c6cdd5"},
+    ]
+
+
+def _pct(cur, prev):
+    if not prev:
+        return None
+    return round((cur - prev) / prev * 100, 1)
+
+
+def _compute_trends(project, start, end, data):
+    """% de cambio vs periodo anterior (como las flechas de SE Ranking)."""
+    t = {}
+    try:
+        if not project["account_id"]:
+            return t
+        creds = google_oauth.credentials_for_account(project["account_id"])
+        ps, pe = _prev_period(start, end)
+        if project["ga4_property"] and data.get("ga4"):
+            prev = ga4.monthly_report(creds, project["ga4_property"], ps, pe)["totals"]
+            cur = data["ga4"]["totals"]
+            t["sessions"] = _pct(cur["sessions"], prev["sessions"])
+            t["users"] = _pct(cur["users"], prev["users"])
+            t["pageviews"] = _pct(cur["pageviews"], prev["pageviews"])
+        if project["gsc_site"] and data.get("gsc_totals"):
+            pv = gsc.totals(creds, project["gsc_site"], ps, pe)
+            cur = data["gsc_totals"]
+            t["clicks"] = _pct(cur["clicks"], pv["clicks"])
+            t["impressions"] = _pct(cur["impressions"], pv["impressions"])
+            # posición: positivo = mejora (bajó el número)
+            t["position"] = round(pv["position"] - cur["position"], 1) if pv["position"] else None
+    except Exception:
+        pass
+    return t
+
+
 def report_data_full(project, start, end):
     """Datos completos para el informe estilo SE Ranking (tráfico + posiciones + auditoría + competencia)."""
     data = gather_report_data(project, start, end, include_crawl=False)
     data["rank"] = rank_data(project, start, end)
     data["buckets"] = keyword_buckets(data.get("keywords"))
+    data["distribution"] = keyword_distribution(data.get("keywords"))
     row = db.latest_audit(project["id"])
     data["audit"] = json.loads(row["data_json"]) if row else None
+    data["trends"] = _compute_trends(project, start, end, data)
     return data
 
 
