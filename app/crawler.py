@@ -12,9 +12,10 @@ Lecciones de producción respetadas:
 import re
 import time
 import requests
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from lxml import etree
+import lxml.html
 
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; CupperlabSEO/1.0; +https://cupperlab.com)"}
 TIMEOUT = 10
@@ -202,3 +203,158 @@ def _representative_sample(urls, max_urls):
     for t, lst in by_type.items():
         sample.extend(lst[:per])
     return sample[:max_urls]
+
+
+# ============================================================
+#  SITE AUDIT (estilo SE Ranking) — auditoría técnica on-page
+# ============================================================
+def _audit_one(url):
+    """Descarga una URL y extrae sus señales SEO on-page."""
+    t0 = time.time()
+    r = _get(url, allow_redirects=False)
+    if r is None:
+        return {"url": url, "status": 0, "state": "ERR"}
+    resp_ms = int((time.time() - t0) * 1000)
+    code = r.status_code
+    info = {
+        "url": url, "status": code, "resp_ms": resp_ms,
+        "state": "OK" if code == 200 else ("REDIR" if 300 <= code < 400 else "BROKEN" if code >= 400 else "OTHER"),
+        "redirect_to": r.headers.get("Location", "") if 300 <= code < 400 else "",
+        "title": "", "title_len": 0, "meta_desc": "", "md_len": 0,
+        "h1_count": 0, "canonical": "", "indexable": None,
+        "words": 0, "imgs": 0, "imgs_noalt": 0, "int_links": 0, "ext_links": 0,
+        "is_html": "text/html" in r.headers.get("Content-Type", ""),
+    }
+    if code == 200 and info["is_html"]:
+        try:
+            doc = lxml.html.fromstring(r.content)
+        except Exception:
+            return info
+        host = urlparse(url).netloc
+        title = (doc.findtext(".//title") or "").strip()
+        info["title"] = title[:200]; info["title_len"] = len(title)
+        md = doc.xpath('//meta[@name="description"]/@content')
+        md = (md[0] if md else "").strip()
+        info["meta_desc"] = md[:300]; info["md_len"] = len(md)
+        info["h1_count"] = len(doc.xpath("//h1"))
+        can = doc.xpath('//link[@rel="canonical"]/@href')
+        info["canonical"] = (can[0] if can else "")
+        robots = " ".join(doc.xpath('//meta[@name="robots"]/@content')).lower()
+        xrobots = r.headers.get("X-Robots-Tag", "").lower()
+        info["indexable"] = not ("noindex" in robots or "noindex" in xrobots)
+        imgs = doc.xpath("//img")
+        info["imgs"] = len(imgs)
+        info["imgs_noalt"] = sum(1 for im in imgs if not (im.get("alt") or "").strip())
+        text = doc.text_content() or ""
+        info["words"] = len(text.split())
+        for a in doc.xpath("//a/@href"):
+            if a.startswith("#") or a.startswith("mailto:") or a.startswith("tel:"):
+                continue
+            netloc = urlparse(urljoin(url, a)).netloc
+            if netloc == host or not netloc:
+                info["int_links"] += 1
+            else:
+                info["ext_links"] += 1
+    return info
+
+
+def site_audit(domain, max_urls=120, time_budget=48.0):
+    """Auditoría técnica tipo SE Ranking: rastrea y puntúa la salud on-page."""
+    base = _norm(domain)
+    started = time.time()
+    all_urls, _subs = _fetch_sitemap_urls(base)
+    if not all_urls:
+        all_urls = [base + "/"]
+    sample = _representative_sample(all_urls, max_urls)
+    if base + "/" not in sample:
+        sample = [base + "/"] + sample
+
+    pages = []
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
+        futs = {ex.submit(_audit_one, u): u for u in sample}
+        for fut in as_completed(futs):
+            if time.time() - started > time_budget:
+                break
+            try:
+                pages.append(fut.result())
+            except Exception:
+                pass
+
+    html_pages = [p for p in pages if p.get("state") == "OK" and p.get("is_html")]
+    n = max(1, len(html_pages))
+    crawled = len(pages)
+
+    def urls_with(pred, src=None):
+        return [p["url"] for p in (src or html_pages) if pred(p)]
+
+    broken = urls_with(lambda p: p["state"] == "BROKEN", pages)
+    server_err = urls_with(lambda p: p["status"] >= 500, pages)
+    redirects = urls_with(lambda p: p["state"] == "REDIR", pages)
+    no_title = urls_with(lambda p: p["title_len"] == 0)
+    long_title = urls_with(lambda p: p["title_len"] > 60)
+    short_title = urls_with(lambda p: 0 < p["title_len"] < 30)
+    no_md = urls_with(lambda p: p["md_len"] == 0)
+    long_md = urls_with(lambda p: p["md_len"] > 160)
+    no_h1 = urls_with(lambda p: p["h1_count"] == 0)
+    multi_h1 = urls_with(lambda p: p["h1_count"] > 1)
+    noindex = urls_with(lambda p: p["indexable"] is False)
+    low_words = urls_with(lambda p: p["words"] < 200)
+    imgs_noalt = urls_with(lambda p: p["imgs_noalt"] > 0)
+    slow = urls_with(lambda p: p["resp_ms"] > 3000)
+    no_canonical = urls_with(lambda p: not p["canonical"])
+
+    # Títulos duplicados
+    seen = {}
+    for p in html_pages:
+        if p["title"]:
+            seen.setdefault(p["title"], []).append(p["url"])
+    dup_titles = [u for lst in seen.values() if len(lst) > 1 for u in lst]
+
+    def issue(key, label, sev, urls, weight):
+        return {"key": key, "label": label, "sev": sev,
+                "count": len(urls), "sample": urls[:8], "weight": weight}
+
+    errors = [i for i in [
+        issue("broken", "Páginas con error (4xx)", "error", broken, 25),
+        issue("server", "Errores de servidor (5xx)", "error", server_err, 25),
+        issue("no_title", "Páginas sin título (title)", "error", no_title, 15),
+        issue("no_h1", "Páginas sin encabezado H1", "error", no_h1, 12),
+        issue("dup_titles", "Títulos duplicados", "error", dup_titles, 12),
+    ] if i["count"]]
+    warnings = [i for i in [
+        issue("no_md", "Sin meta descripción", "warning", no_md, 10),
+        issue("multi_h1", "Más de un H1", "warning", multi_h1, 7),
+        issue("long_title", "Título demasiado largo (>60)", "warning", long_title, 6),
+        issue("short_title", "Título demasiado corto (<30)", "warning", short_title, 5),
+        issue("low_words", "Poco contenido (<200 palabras)", "warning", low_words, 8),
+        issue("imgs_noalt", "Imágenes sin atributo alt", "warning", imgs_noalt, 6),
+        issue("slow", "Páginas lentas (>3 s)", "warning", slow, 6),
+    ] if i["count"]]
+    notices = [i for i in [
+        issue("long_md", "Meta descripción muy larga (>160)", "notice", long_md, 2),
+        issue("redirects", "Redirecciones (3xx)", "notice", redirects, 2),
+        issue("noindex", "Páginas noindex", "notice", noindex, 2),
+        issue("no_canonical", "Sin etiqueta canonical", "notice", no_canonical, 2),
+    ] if i["count"]]
+
+    # Puntuación de salud 0-100
+    score = 100.0
+    for i in errors + warnings:
+        score -= i["weight"] * min(1.0, i["count"] / n)
+    score = max(0, round(score))
+
+    return {
+        "base": base,
+        "crawled": crawled,
+        "html_pages": len(html_pages),
+        "score": score,
+        "counts": {
+            "ok": len(html_pages), "broken": len(broken), "redirects": len(redirects),
+            "errors": sum(i["count"] for i in errors),
+            "warnings": sum(i["count"] for i in warnings),
+            "notices": sum(i["count"] for i in notices),
+        },
+        "errors": errors, "warnings": warnings, "notices": notices,
+        "pages": sorted(pages, key=lambda p: (p.get("state") != "BROKEN", p["url"]))[:150],
+        "elapsed": round(time.time() - started, 1),
+    }

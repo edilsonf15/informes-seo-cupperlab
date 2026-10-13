@@ -36,7 +36,40 @@ CREATE TABLE IF NOT EXISTS settings (
     key   TEXT PRIMARY KEY,
     value TEXT
 );
+CREATE TABLE IF NOT EXISTS audits (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER NOT NULL,
+    score      INTEGER,
+    data_json  TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (project_id) REFERENCES projects(id)
+);
 """
+
+
+def save_audit(project_id, score, data_json):
+    conn = get_db()
+    conn.execute(
+        "INSERT INTO audits (project_id, score, data_json, created_at) VALUES (?,?,?,?)",
+        (project_id, score, data_json, _now()),
+    )
+    # conservar solo las últimas 10 por proyecto
+    conn.execute(
+        "DELETE FROM audits WHERE project_id=? AND id NOT IN "
+        "(SELECT id FROM audits WHERE project_id=? ORDER BY id DESC LIMIT 10)",
+        (project_id, project_id),
+    )
+    conn.commit()
+    conn.close()
+
+
+def latest_audit(project_id):
+    conn = get_db()
+    row = conn.execute(
+        "SELECT * FROM audits WHERE project_id=? ORDER BY id DESC LIMIT 1", (project_id,)
+    ).fetchone()
+    conn.close()
+    return row
 
 
 def get_setting(key, default=""):
@@ -160,6 +193,8 @@ def get_project(pid):
 
 def delete_project(pid):
     conn = get_db()
+    conn.execute("DELETE FROM audits WHERE project_id=?", (pid,))
+    conn.execute("DELETE FROM reports WHERE project_id=?", (pid,))
     conn.execute("DELETE FROM projects WHERE id=?", (pid,))
     conn.commit()
     conn.close()

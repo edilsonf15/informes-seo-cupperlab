@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block page_title %}Auditoría · {{ project.name }}{% endblock %}
+{% block page_active %}panel{% endblock %}
+{% block topbar_title %}Auditoría del sitio{% endblock %}
+{% block page_eyebrow %}{{ project.domain }}{% endblock %}
+{% block topbar_actions %}
+  <form method="post" action="{{ url_for('main.audit_run', pid=project.id) }}">
+    <button class="btn cyan" type="submit">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.2-8.5"/><path d="M21 3v6h-6"/></svg>
+      {{ 'Volver a analizar' if audit else 'Ejecutar auditoría' }}
+    </button>
+  </form>
+{% endblock %}
+{% block body %}
+<p class="lead"><a href="{{ url_for('main.project_detail', pid=project.id) }}">← {{ project.name }}</a></p>
+
+{% if not audit %}
+  <div class="card">
+    <div class="empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3a8 8 0 1 0 0 16 8 8 0 0 0 0-16z"/><path d="M21 21l-4.3-4.3"/></svg>
+      <div>Aún no has auditado esta web. Pulsa <b>Ejecutar auditoría</b> arriba (tarda ~1 min).</div>
+    </div>
+  </div>
+{% else %}
+  {% set s = audit.score %}
+  {% set col = '#1f9d6b' if s>=80 else ('#dfa019' if s>=50 else '#d64343') %}
+  {% set circ = 326.7 %}
+  <div class="card">
+    <div style="display:flex;gap:30px;align-items:center;flex-wrap:wrap">
+      <div style="position:relative;width:150px;height:150px;flex:0 0 150px">
+        <svg viewBox="0 0 120 120" width="150" height="150">
+          <circle cx="60" cy="60" r="52" fill="none" stroke="#e8ecf1" stroke-width="12"/>
+          <circle cx="60" cy="60" r="52" fill="none" stroke="{{ col }}" stroke-width="12"
+                  stroke-linecap="round" stroke-dasharray="{{ (s/100*circ)|round(1) }} {{ circ }}"
+                  transform="rotate(-90 60 60)"/>
+          <text x="60" y="58" text-anchor="middle" font-family="Sora,sans-serif" font-size="30" font-weight="800" fill="#0e1319">{{ s }}</text>
+          <text x="60" y="76" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="9" fill="#7b8694">/ 100</text>
+        </svg>
+      </div>
+      <div style="flex:1;min-width:240px">
+        <span class="section-eyebrow">Salud del sitio</span>
+        <h2 style="font-size:22px;margin:2px 0 10px">
+          {{ 'Buena salud SEO' if s>=80 else ('Mejorable' if s>=50 else 'Necesita atención') }}
+        </h2>
+        <div class="kpi-row" style="grid-template-columns:repeat(4,1fr)">
+          <div class="kpi"><span class="label">Páginas</span><div class="value">{{ fmt(audit.crawled) }}</div></div>
+          <div class="kpi bad"><span class="label">Errores</span><div class="value">{{ fmt(audit.counts.errors) }}</div></div>
+          <div class="kpi"><span class="label" style="color:#dfa019">Avisos</span><div class="value" style="color:#dfa019">{{ fmt(audit.counts.warnings) }}</div></div>
+          <div class="kpi"><span class="label">Notas</span><div class="value">{{ fmt(audit.counts.notices) }}</div></div>
+        </div>
+      </div>
+    </div>
+    {% if created_at %}<p class="hint" style="margin-top:12px">Última auditoría: {{ created_at }} · {{ audit.elapsed }}s</p>{% endif %}
+  </div>
+
+  {% macro issue_block(title, items, color) %}
+    {% if items %}
+    <div class="card">
+      <div class="card-head"><h3 style="color:{{ color }}">{{ title }}</h3></div>
+      {% for i in items %}
+      <div style="padding:12px 0;border-bottom:1px solid var(--ink-75)">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="pill" style="background:{{ color }}1a;color:{{ color }}">{{ i.count }}</span>
+          <b>{{ i.label }}</b>
+        </div>
+        {% if i.sample %}
+        <div style="margin-top:6px;font-family:var(--font-mono);font-size:11px;color:var(--ink-400);word-break:break-all">
+          {% for u in i.sample %}<div>{{ u }}</div>{% endfor %}
+          {% if i.count > i.sample|length %}<div class="muted">… y {{ i.count - i.sample|length }} más</div>{% endif %}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endmacro %}
+
+  {{ issue_block('🔴 Errores', audit.errors, '#d64343') }}
+  {{ issue_block('🟠 Advertencias', audit.warnings, '#dfa019') }}
+  {{ issue_block('🔵 Avisos', audit.notices, '#0f9bc2') }}
+
+  <div class="card">
+    <div class="card-head"><h3>Páginas analizadas</h3></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>URL</th><th>Estado</th><th>Título</th><th>H1</th><th>Palabras</th><th>Img s/alt</th><th>ms</th><th>Index</th></tr></thead>
+        <tbody>
+        {% for p in audit.pages[:80] %}
+          <tr>
+            <td style="max-width:360px;word-break:break-all"><b>{{ p.url }}</b></td>
+            <td>{% if p.state=='OK' %}<span class="pill ok">{{ p.status }}</span>{% elif p.state=='BROKEN' %}<span class="pill bad">{{ p.status }}</span>{% elif p.state=='REDIR' %}<span class="pill warn">{{ p.status }}</span>{% else %}{{ p.status }}{% endif %}</td>
+            <td>{{ p.title_len }}</td>
+            <td>{{ p.h1_count }}</td>
+            <td>{{ fmt(p.words) }}</td>
+            <td>{% if p.imgs_noalt %}<span class="bad">{{ p.imgs_noalt }}</span>{% else %}0{% endif %}</td>
+            <td>{{ p.resp_ms }}</td>
+            <td>{% if p.indexable is sameas true %}<span class="pill ok">sí</span>{% elif p.indexable is sameas false %}<span class="pill off">no</span>{% else %}—{% endif %}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

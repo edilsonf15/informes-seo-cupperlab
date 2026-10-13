@@ -1,11 +1,12 @@
 """Rutas (páginas) de la aplicación."""
 import os
 import re
+import json
 from datetime import date, timedelta
 from flask import (Blueprint, render_template, request, redirect, url_for,
                    session, flash, send_from_directory, abort)
 
-from . import config, db, google_oauth, ga4, gsc, service, report
+from . import config, db, google_oauth, ga4, gsc, service, report, crawler
 
 bp = Blueprint("main", __name__)
 
@@ -168,6 +169,33 @@ def project_detail(pid):
                            reports=db.list_reports(pid), today=end,
                            dash=dash, connected=connected, months=months,
                            bar_chart=report.bar_chart, fmt=report._fmt)
+
+
+# ---------------- Site Audit (Módulo 1) ----------------
+@bp.route("/projects/<int:pid>/audit")
+def audit(pid):
+    project = db.get_project(pid)
+    if not project:
+        abort(404)
+    row = db.latest_audit(pid)
+    data = json.loads(row["data_json"]) if row else None
+    return render_template("audit.html", project=project, audit=data,
+                           created_at=(row["created_at"] if row else None),
+                           fmt=report._fmt)
+
+
+@bp.route("/projects/<int:pid>/audit/run", methods=["POST"])
+def audit_run(pid):
+    project = db.get_project(pid)
+    if not project:
+        abort(404)
+    try:
+        result = crawler.site_audit(project["domain"])
+        db.save_audit(pid, result["score"], json.dumps(result))
+        flash(f"Auditoría completada: salud {result['score']}/100 ({result['crawled']} páginas).", "ok")
+    except Exception as e:
+        flash(f"No se pudo completar la auditoría: {e}", "error")
+    return redirect(url_for("main.audit", pid=pid))
 
 
 @bp.route("/projects/<int:pid>/delete", methods=["POST"])
