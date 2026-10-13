@@ -18,10 +18,21 @@ def _slug(text):
 # ---------------- Acceso ----------------
 @bp.before_request
 def _require_login():
-    if request.endpoint in ("main.login", "static", None):
+    # Páginas públicas (Google las necesita para verificar la app).
+    if request.endpoint in ("main.login", "main.privacy", "main.terms", "static", None):
         return
     if not session.get("auth"):
         return redirect(url_for("main.login"))
+
+
+@bp.route("/privacidad")
+def privacy():
+    return render_template("privacy.html")
+
+
+@bp.route("/terminos")
+def terms():
+    return render_template("terms.html")
 
 
 @bp.route("/login", methods=["GET", "POST"])

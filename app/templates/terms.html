@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Términos de uso · Informes SEO Cupperlab</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    body{background:var(--white)}
+    .doc{max-width:820px;margin:0 auto;padding:48px 24px 80px}
+    .doc img{height:30px;margin-bottom:28px}
+    .doc h1{font-size:28px;margin-bottom:6px}
+    .doc h2{font-size:18px;margin:28px 0 8px}
+    .doc p,.doc li{color:var(--ink-700);font-size:15px;line-height:1.65}
+    .doc .upd{color:var(--ink-400);font-family:var(--font-mono);font-size:12px;margin-bottom:24px}
+  </style>
+</head>
+<body>
+  <div class="doc">
+    <img src="{{ url_for('static', filename='brand/cupperlab-wordmark.png') }}" alt="Cupperlab">
+    <h1>Términos de uso</h1>
+    <div class="upd">Informes SEO · Cupperlab · Actualizado: octubre de 2026</div>
+
+    <p>La aplicación <b>Informes SEO</b> de Cupperlab es una herramienta interna de uso profesional para
+       generar informes y análisis SEO de sitios web a partir de datos de Google Analytics y Google
+       Search Console a los que el usuario tiene acceso legítimo.</p>
+
+    <h2>1. Uso aceptable</h2>
+    <p>El usuario se compromete a conectar únicamente cuentas y propiedades sobre las que tiene autorización,
+       y a usar la aplicación para fines de análisis y reporte SEO de sus propios clientes o proyectos.</p>
+
+    <h2>2. Acceso de solo lectura</h2>
+    <p>La aplicación accede a los datos de Google en modo solo lectura y no realiza cambios en las cuentas
+       conectadas.</p>
+
+    <h2>3. Disponibilidad</h2>
+    <p>La aplicación se ofrece "tal cual". Cupperlab procura su disponibilidad pero no garantiza un servicio
+       ininterrumpido.</p>
+
+    <h2>4. Datos</h2>
+    <p>El tratamiento de datos se rige por la <a href="{{ url_for('main.privacy') }}">Política de privacidad</a>.</p>
+
+    <h2>5. Contacto</h2>
+    <p><b>soporte@cupperlab.com</b></p>
+
+    <p style="margin-top:36px"><a href="{{ url_for('main.login') }}">← Volver a la aplicación</a></p>
+  </div>
+</body>
+</html>

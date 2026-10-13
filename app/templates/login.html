@@ -36,6 +36,11 @@
     <input type="password" name="password" autofocus required placeholder="••••••••">
     <button class="btn cyan" type="submit">Entrar</button>
     <div class="foot">Mejoramos tu rentabilidad</div>
+    <div style="text-align:center;margin-top:10px;font-size:11px">
+      <a href="{{ url_for('main.privacy') }}" style="color:var(--ink-300)">Privacidad</a>
+      <span style="color:var(--ink-200)">·</span>
+      <a href="{{ url_for('main.terms') }}" style="color:var(--ink-300)">Términos</a>
+    </div>
   </form>
 </body>
 </html>

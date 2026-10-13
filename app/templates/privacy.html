@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Política de privacidad · Informes SEO Cupperlab</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    body{background:var(--white)}
+    .doc{max-width:820px;margin:0 auto;padding:48px 24px 80px}
+    .doc img{height:30px;margin-bottom:28px}
+    .doc h1{font-size:28px;margin-bottom:6px}
+    .doc h2{font-size:18px;margin:28px 0 8px}
+    .doc p,.doc li{color:var(--ink-700);font-size:15px;line-height:1.65}
+    .doc ul{padding-left:22px}
+    .doc .upd{color:var(--ink-400);font-family:var(--font-mono);font-size:12px;margin-bottom:24px}
+  </style>
+</head>
+<body>
+  <div class="doc">
+    <img src="{{ url_for('static', filename='brand/cupperlab-wordmark.png') }}" alt="Cupperlab">
+    <h1>Política de privacidad</h1>
+    <div class="upd">Informes SEO · Cupperlab · Actualizado: octubre de 2026</div>
+
+    <p>Esta política describe cómo la aplicación <b>Informes SEO</b> de Cupperlab
+       (en adelante, "la aplicación", accesible en informes.cupperlab.com) trata los datos cuando
+       un usuario la conecta con su cuenta de Google.</p>
+
+    <h2>1. Qué datos usamos</h2>
+    <p>La aplicación solicita acceso de <b>solo lectura</b> a:</p>
+    <ul>
+      <li><b>Google Analytics</b> (ámbito <code>analytics.readonly</code>): métricas de tráfico y uso de los sitios web del propio usuario.</li>
+      <li><b>Google Search Console</b> (ámbito <code>webmasters.readonly</code>): datos de rendimiento en búsqueda (clics, impresiones, posiciones, consultas) de los sitios verificados del usuario.</li>
+      <li>La <b>dirección de correo</b> de la cuenta conectada, solo para identificarla dentro de la aplicación.</li>
+    </ul>
+    <p>La aplicación <b>no modifica</b> ninguna configuración ni dato en las cuentas de Google: el acceso es únicamente de lectura.</p>
+
+    <h2>2. Para qué los usamos</h2>
+    <p>Los datos se utilizan exclusivamente para <b>generar informes y paneles de rendimiento SEO</b>
+       de los sitios web del usuario (evolución de tráfico, posiciones, palabras clave, auditoría técnica).
+       No se usan para ningún otro fin.</p>
+
+    <h2>3. Cómo los almacenamos</h2>
+    <p>Los tokens de acceso de Google se guardan de forma cifrada en el servidor privado del usuario para
+       poder consultar los datos cuando este genera un informe. Los informes generados se guardan en ese
+       mismo servidor. No se almacenan datos personales de terceros más allá de las métricas agregadas
+       necesarias para los informes.</p>
+
+    <h2>4. Con quién los compartimos</h2>
+    <p>Con <b>nadie</b>. Los datos no se venden, ceden ni comparten con terceros. Permanecen en el entorno
+       privado de Cupperlab y de su cliente.</p>
+
+    <h2>5. Uso limitado (Google API Services)</h2>
+    <p>El uso de la información recibida de las APIs de Google por parte de esta aplicación se ajusta a la
+       <a href="https://developers.google.com/terms/api-services-user-data-policy">Política de Datos de Usuario de los Servicios de las APIs de Google</a>,
+       incluidos sus requisitos de Uso Limitado (Limited Use).</p>
+
+    <h2>6. Revocar el acceso</h2>
+    <p>El usuario puede desconectar la cuenta en cualquier momento desde la propia aplicación, o retirar el
+       permiso desde <a href="https://myaccount.google.com/permissions">la configuración de su cuenta de Google</a>.</p>
+
+    <h2>7. Contacto</h2>
+    <p>Para cualquier duda sobre esta política: <b>soporte@cupperlab.com</b>.</p>
+
+    <p style="margin-top:36px"><a href="{{ url_for('main.login') }}">← Volver a la aplicación</a></p>
+  </div>
+</body>
+</html>
