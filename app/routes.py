@@ -209,6 +209,25 @@ def audit_run(pid):
     return redirect(url_for("main.audit", pid=pid))
 
 
+# ---------------- Rank Tracker (Módulo 2) ----------------
+@bp.route("/projects/<int:pid>/posiciones")
+def ranktracker(pid):
+    project = db.get_project(pid)
+    if not project:
+        abort(404)
+    today = date.today()
+    try:
+        months = int(request.args.get("months", 3))
+    except ValueError:
+        months = 3
+    months = max(1, min(months, 16))
+    start = (today - timedelta(days=30 * months)).isoformat()
+    end = today.isoformat()
+    rank = service.rank_data(project, start, end)
+    return render_template("ranktracker.html", project=project, rank=rank, months=months,
+                           bar_chart=report.bar_chart, fmt=report._fmt)
+
+
 @bp.route("/projects/<int:pid>/delete", methods=["POST"])
 def delete_project(pid):
     db.delete_project(pid)
@@ -225,14 +244,22 @@ def generate(pid):
     start = request.form.get("start")
     end = request.form.get("end")
     client_name = request.form.get("client_name", "").strip()
+    report_type = request.form.get("report_type", "seo")
     fase = request.form.get("fase", "").strip() or "JUSTIFICACIÓN SITIO WEB Y PRESENCIA EN INTERNET"
     fecha_elaboracion = request.form.get("fecha_elaboracion") or date.today().isoformat()
 
     try:
-        data = service.gather_report_data(project, start, end)
-        ctx = service.build_context(project, start, end, data, client_name, fase, fecha_elaboracion)
-        html = report.render_html(ctx)
-        fname = f"Justificacion_{_slug(project['name'])}_{start}_{end}.pdf"
+        if report_type == "justificacion":
+            data = service.gather_report_data(project, start, end)
+            ctx = service.build_context(project, start, end, data, client_name, fase, fecha_elaboracion)
+            html = report.render_html(ctx)
+            prefix = "Justificacion"
+        else:
+            data = service.report_data_full(project, start, end)
+            ctx = service.build_context(project, start, end, data, client_name, fase, fecha_elaboracion)
+            html = report.render_seranking(ctx)
+            prefix = "Informe_SEO"
+        fname = f"{prefix}_{_slug(project['name'])}_{start}_{end}.pdf"
         pdf_path = os.path.join(config.REPORTS_DIR, fname)
         report.html_to_pdf(html, pdf_path)
         db.add_report(pid, fname, start, end)

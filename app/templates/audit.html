@@ -11,8 +11,9 @@
     </button>
   </form>
 {% endblock %}
+{% from "_tabs.html" import project_tabs %}
 {% block body %}
-<p class="lead"><a href="{{ url_for('main.project_detail', pid=project.id) }}">← {{ project.name }}</a></p>
+{{ project_tabs(project, 'audit') }}
 
 {% if not audit %}
   <div class="card">

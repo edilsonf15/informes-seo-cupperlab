@@ -1,10 +1,25 @@
 """Renderizado del informe: HTML (Jinja) -> PDF (Playwright/Chromium)."""
 import os
+import base64
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from playwright.sync_api import sync_playwright
 from . import config
 
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "templates")
+_LOGO_PATH = os.path.join(os.path.dirname(__file__), "static", "brand", "cupperlab-wordmark.png")
+_LOGO_URI = None
+
+
+def logo_uri():
+    """Devuelve el wordmark de Cupperlab como data-URI (para embeber en el PDF)."""
+    global _LOGO_URI
+    if _LOGO_URI is None:
+        try:
+            with open(_LOGO_PATH, "rb") as f:
+                _LOGO_URI = "data:image/png;base64," + base64.b64encode(f.read()).decode()
+        except Exception:
+            _LOGO_URI = ""
+    return _LOGO_URI
 
 _env = Environment(
     loader=FileSystemLoader(TEMPLATES_DIR),
@@ -56,6 +71,15 @@ def render_html(context):
     tpl = _env.get_template("report_justificacion.html")
     context.setdefault("fmt", _fmt)
     context.setdefault("bar_chart", bar_chart)
+    return tpl.render(**context)
+
+
+def render_seranking(context):
+    """Informe SEO completo estilo SE Ranking, con marca Cupperlab."""
+    tpl = _env.get_template("report_seranking.html")
+    context.setdefault("fmt", _fmt)
+    context.setdefault("bar_chart", bar_chart)
+    context.setdefault("logo_uri", logo_uri())
     return tpl.render(**context)
 
 

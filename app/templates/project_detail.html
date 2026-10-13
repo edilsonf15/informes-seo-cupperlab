@@ -10,7 +10,9 @@
   </a>
   <a class="btn outline sm" href="{{ url_for('main.configure_project', pid=project.id) }}">Editar fuentes</a>
 {% endblock %}
+{% from "_tabs.html" import project_tabs %}
 {% block body %}
+{{ project_tabs(project, 'panel') }}
 
 {% if not connected %}
   <div class="callout">
@@ -99,6 +101,11 @@
   <div class="card">
     <div class="card-head"><h3>Generar justificación</h3></div>
     <form method="post" action="{{ url_for('main.generate', pid=project.id) }}">
+      <label>Tipo de informe</label>
+      <select name="report_type">
+        <option value="seo">Informe SEO completo (estilo SE Ranking)</option>
+        <option value="justificacion">Justificación de subvención (formato sobrio)</option>
+      </select>
       <div class="grid2">
         <div><label>Inicio del periodo</label><input type="date" name="start" required></div>
         <div><label>Fin del periodo</label><input type="date" name="end" value="{{ today }}" required></div>

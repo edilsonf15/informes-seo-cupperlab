@@ -1,5 +1,6 @@
 """Orquestación: reúne todos los datos de un informe desde sus fuentes."""
-from datetime import datetime
+import json
+from datetime import datetime, timedelta
 from . import db, ga4, gsc, crawler, google_oauth, sistrix
 
 MESES_ES = ["", "enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
@@ -33,6 +34,56 @@ def dashboard_data(project, start, end):
     """Datos en vivo para el panel (sin rastreo, para que cargue rápido)."""
     data = gather_report_data(project, start, end, include_crawl=False)
     data["buckets"] = keyword_buckets(data.get("keywords"))
+    return data
+
+
+def _prev_period(start, end):
+    s = datetime.strptime(start, "%Y-%m-%d")
+    e = datetime.strptime(end, "%Y-%m-%d")
+    days = (e - s).days + 1
+    return (s - timedelta(days=days)).strftime("%Y-%m-%d"), (s - timedelta(days=1)).strftime("%Y-%m-%d")
+
+
+def rank_data(project, start, end):
+    """Rank Tracker: posiciones reales de keywords + variación vs periodo anterior (Search Console)."""
+    out = {"rows": [], "buckets": {}, "avg_position": 0, "totals": None, "monthly": [], "warning": None}
+    if not project["account_id"] or not project["gsc_site"]:
+        out["warning"] = "Asigna el sitio de Search Console en 'Editar fuentes' para ver posiciones."
+        return out
+    try:
+        creds = google_oauth.credentials_for_account(project["account_id"])
+        site = project["gsc_site"]
+        cur = gsc.keywords(creds, site, start, end, limit=1000)
+        ps, pe = _prev_period(start, end)
+        try:
+            prev = {k["query"]: k["position"] for k in gsc.keywords(creds, site, ps, pe, limit=1000)}
+        except Exception:
+            prev = {}
+        rows = []
+        for k in cur:
+            pp = prev.get(k["query"])
+            # delta positivo = mejora (subió posiciones)
+            delta = round(pp - k["position"], 1) if pp else None
+            rows.append({**k, "prev": pp, "delta": delta})
+        rows.sort(key=lambda r: -r["impressions"])
+        poss = [k["position"] for k in cur if k["position"]]
+        out["rows"] = rows
+        out["buckets"] = keyword_buckets(cur)
+        out["avg_position"] = round(sum(poss) / len(poss), 1) if poss else 0
+        out["totals"] = gsc.totals(creds, site, start, end)
+        out["monthly"] = gsc.monthly(creds, site, start, end)
+    except Exception as e:
+        out["warning"] = f"Search Console: {e}"
+    return out
+
+
+def report_data_full(project, start, end):
+    """Datos completos para el informe estilo SE Ranking (tráfico + posiciones + auditoría + competencia)."""
+    data = gather_report_data(project, start, end, include_crawl=False)
+    data["rank"] = rank_data(project, start, end)
+    data["buckets"] = keyword_buckets(data.get("keywords"))
+    row = db.latest_audit(project["id"])
+    data["audit"] = json.loads(row["data_json"]) if row else None
     return data
 
 

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% from "_tabs.html" import project_tabs %}
+{% block page_title %}Posiciones · {{ project.name }}{% endblock %}
+{% block page_active %}panel{% endblock %}
+{% block topbar_title %}Posiciones de keywords{% endblock %}
+{% block page_eyebrow %}{{ project.domain }}{% endblock %}
+{% block topbar_actions %}
+  <div class="seg">
+    <span class="small muted" style="margin-right:4px">Periodo</span>
+    {% for m in [1,3,6,12] %}<a class="{{ 'on' if m==months }}" href="?months={{ m }}">{{ m }}m</a>{% endfor %}
+  </div>
+{% endblock %}
+{% block body %}
+{{ project_tabs(project, 'rank') }}
+
+{% if rank.warning %}
+  <div class="callout"><h3>Conecta Search Console</h3><p class="small">{{ rank.warning }}</p>
+    <div style="margin-top:8px"><a class="btn cyan sm" href="{{ url_for('main.configure_project', pid=project.id) }}">Editar fuentes</a></div>
+  </div>
+{% else %}
+  <div class="kpi-row" style="margin-bottom:20px">
+    <div class="kpi"><span class="label">Keywords</span><div class="value">{{ fmt(rank.buckets.total) }}</div><div class="sub">en Google</div></div>
+    <div class="kpi good"><span class="label">Top 3</span><div class="value">{{ fmt(rank.buckets.top3) }}</div></div>
+    <div class="kpi"><span class="label">Top 10</span><div class="value">{{ fmt(rank.buckets.top10) }}</div></div>
+    <div class="kpi"><span class="label">Top 100</span><div class="value">{{ fmt(rank.buckets.top100) }}</div></div>
+    <div class="kpi accent"><span class="label">Posición media</span><div class="value">{{ rank.avg_position }}</div></div>
+    {% if rank.totals %}<div class="kpi"><span class="label">Clics</span><div class="value">{{ fmt(rank.totals.clicks) }}</div></div>{% endif %}
+  </div>
+
+  {% if rank.monthly %}
+  <div class="card">
+    <div class="card-head"><h3>Evolución de impresiones</h3></div>
+    <div class="chart">{{ bar_chart(rank.monthly, 'impressions', color='#12324a')|safe }}</div>
+  </div>
+  {% endif %}
+
+  <div class="card">
+    <div class="card-head"><h3>Keywords y posición</h3><div class="sp"></div>
+      <span class="small muted">▲ mejora · ▼ baja · vs periodo anterior</span></div>
+    {% if rank.rows %}
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Keyword</th><th>Posición</th><th>Cambio</th><th>Impresiones</th><th>Clics</th><th>CTR</th></tr></thead>
+        <tbody>
+        {% for k in rank.rows[:100] %}
+          <tr>
+            <td class="muted">{{ loop.index }}</td>
+            <td><b>{{ k.query }}</b></td>
+            <td>{{ k.position }}</td>
+            <td>
+              {% if k.delta is none %}<span class="delta-eq">nuevo</span>
+              {% elif k.delta > 0 %}<span class="delta-up">▲ {{ k.delta }}</span>
+              {% elif k.delta < 0 %}<span class="delta-down">▼ {{ (-k.delta) }}</span>
+              {% else %}<span class="delta-eq">=</span>{% endif %}
+            </td>
+            <td>{{ fmt(k.impressions) }}</td>
+            <td>{{ fmt(k.clicks) }}</td>
+            <td>{{ k.ctr }}%</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if rank.rows|length > 100 %}<p class="hint" style="margin-top:10px">Mostrando 100 de {{ fmt(rank.rows|length) }} keywords.</p>{% endif %}
+    {% else %}
+    <div class="empty">No hay keywords con datos en este periodo todavía.</div>
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}
