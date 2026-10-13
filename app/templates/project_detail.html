@@ -58,6 +58,21 @@
   </div>
   {% endif %}
 
+  {% if dash.ga4 %}
+  {% set g = dash.ga4.totals %}
+  <span class="section-eyebrow">Resumen de la mejora del servicio · Analytics</span>
+  <div class="lkgrid" style="margin-bottom:18px">
+    <div class="lk"><div class="lkl">Sesiones</div><div class="lkn">{{ fmt(g.sessions) }}</div><div class="lkd">Número total de sesiones en el período seleccionado</div></div>
+    <div class="lk"><div class="lkl">Sesiones con interacción</div><div class="lkn">{{ fmt(g.engaged_sessions) }}</div><div class="lkd">Sesiones de más de 10 segundos, con un evento de conversión o al menos 2 páginas vistas</div></div>
+    <div class="lk"><div class="lkl">Usuarios</div><div class="lkn">{{ fmt(g.users) }}</div><div class="lkd">Número total de usuarios que iniciaron al menos una sesión en el período</div></div>
+    <div class="lk"><div class="lkl">Nuevos usuarios</div><div class="lkn">{{ g.new_users_pct }}%</div><div class="lkd">Nuevos usuarios únicos que iniciaron sesión por primera vez</div></div>
+    <div class="lk"><div class="lkl">Tasa de interacción</div><div class="lkn">{{ g.engagement_rate }}%</div><div class="lkd">Relación de sesiones interactivas con respecto al total de sesiones</div></div>
+    <div class="lk"><div class="lkl">Conversiones</div><div class="lkn">{{ fmt(g.conversions) }}</div><div class="lkd">Número de veces que los usuarios activaron un evento de conversión</div></div>
+    <div class="lk"><div class="lkl">Tiempo prom. de interacción</div><div class="lkn">{{ g.avg_engagement_fmt }}</div><div class="lkd">Duración promedio que el sitio web estuvo enfocado en el navegador</div></div>
+    <div class="lk"><div class="lkl">Vistas</div><div class="lkn">{{ fmt(g.pageviews) }}</div><div class="lkd">Número total de páginas web que los usuarios visitaron en el período</div></div>
+  </div>
+  {% endif %}
+
   <div class="grid2">
     {% if dash.distribution %}
     <div class="card">
